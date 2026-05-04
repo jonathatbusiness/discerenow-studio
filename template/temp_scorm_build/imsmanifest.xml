@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="o-metodo-pomodoro-na-pratica" version="1.2"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+
+  <organizations default="org_1">
+    <organization identifier="org_1">
+      <title>O método Pomodoro na prática</title>
+      <item identifier="item_1" identifierref="resource_1">
+        <title>O método Pomodoro na prática</title>
+      </item>
+    </organization>
+  </organizations>
+
+  <resources>
+    <resource identifier="resource_1" type="webcontent" adlcp:scormtype="sco" href="launcher/indexAPI.html">
+      <file href="launcher/indexAPI.html"/>
+      <file href="launcher/discere-scorm-loader.js"/>
+      <file href="launcher/DiscereScormController.js"/>
+      <file href="launcher/AICCComm.html"/>
+      <file href="launcher/blank.html"/>
+      <file href="launcher/goodbye.html"/>
+      <file href="scormcontent/DiscereNow.svg"/>
+      <file href="scormcontent/DiscereNowLogo.webp"/>
+      <file href="scormcontent/assets/index-Cl4ZhX0-.css"/>
+      <file href="scormcontent/assets/index-U4QO237X.js"/>
+      <file href="scormcontent/img/criatividade-improviso.png"/>
+      <file href="scormcontent/img/criatividade-inspiracao.png"/>
+      <file href="scormcontent/img/criatividade-na-logistica.png"/>
+      <file href="scormcontent/img/descrever-problema.png"/>
+      <file href="scormcontent/img/discere-now-jonatha-teixeira-cover-1.webp"/>
+      <file href="scormcontent/img/engrenagens-cerebro.png"/>
+      <file href="scormcontent/img/equipe-brainstorm.png"/>
+      <file href="scormcontent/img/ideias-equipes.png"/>
+      <file href="scormcontent/img/melhorar-processo.png"/>
+      <file href="scormcontent/img/mural-ideias.png"/>
+      <file href="scormcontent/img/o-metodo-pomodoro-na-pratica/cover.jpg"/>
+      <file href="scormcontent/img/o-metodo-pomodoro-na-pratica/img-1.jpeg"/>
+      <file href="scormcontent/img/referencia-compartilhada.png"/>
+      <file href="scormcontent/img/reuniao-informal.png"/>
+      <file href="scormcontent/index.html"/>
+    </resource>
+  </resources>
+</manifest>

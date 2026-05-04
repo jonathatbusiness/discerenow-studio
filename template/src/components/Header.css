@@ -1,0 +1,39 @@
+.main-header {
+  width: 100%;
+  height: 70px;
+  background-color: rgb(34, 34, 34);
+  border-bottom: 2px solidrgb(46, 46, 46);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+}
+
+.logo-area img {
+  width: 230px;
+}
+
+.logo {
+  height: 40px;
+  object-fit: contain;
+  padding: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .logo-area {
+    height: auto;
+  }
+  .logo-area img {
+    width: 200px;
+    height: auto;
+  }
+}

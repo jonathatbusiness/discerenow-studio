@@ -1,0 +1,256 @@
+.home-container {
+  width: 96.875em;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 20px;
+}
+.course-header-container {
+  display: flex;
+  flex-direction: row;
+}
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  text-align: left;
+  width: 50%;
+}
+
+.course-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 20px;
+  gap: 10px;
+}
+
+.course-info h1 {
+  font-size: 3rem;
+  margin-bottom: 60px;
+}
+
+.course-info-percentage {
+  font-size: 14px;
+  font-style: italic;
+}
+
+.course-image-container {
+  width: 50%;
+}
+
+.start-course-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 200px;
+  border-radius: 20px;
+}
+
+.reset-progress-btn {
+  width: 200px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 400;
+  background-color: transparent;
+  margin-top: 15px;
+  padding: 15px 5px;
+  text-align: left;
+  transition: none;
+  border: none;
+  font-style: italic;
+  color: #4a5568;
+}
+
+.reset-progress-btn:hover {
+  width: 200px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 400;
+  background-color: transparent;
+  margin-top: 15px;
+  padding: 15px 5px;
+  text-align: left;
+  transition: none;
+  text-decoration: underline;
+  border: none;
+}
+
+.course-intro {
+  color: #666666;
+}
+
+.course-intro br {
+  display: block;
+  margin-bottom: 15px;
+  content: " ";
+  line-height: 15px;
+}
+
+.course-image {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.course-image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  z-index: 1;
+}
+
+.course-image img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+}
+
+.course-image:hover img {
+  transform: scale(1.15);
+}
+
+.course-content {
+  margin-top: 30px;
+  width: 50%;
+}
+
+.chapter {
+  margin-bottom: 30px;
+}
+
+.chapter h2 {
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.lesson-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  text-decoration: none;
+  color: black;
+  border: 1px solid #eee;
+  margin-bottom: 10px;
+}
+
+.lesson-item:hover {
+  background-color: rgb(238, 238, 238);
+}
+
+.lesson-icon {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  width: 30px;
+}
+
+.lesson-name {
+  flex-grow: 1;
+  text-align: left;
+  font-size: 15px;
+}
+
+.lesson-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+.lesson-status.completed {
+  color: green;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-text {
+  font-size: 1.25rem;
+  color: #333;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .home-container {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .course-header-container {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+
+  .course-header,
+  .course-image-container,
+  .course-content {
+    width: 100%;
+    text-align: center;
+    padding: 0;
+  }
+
+  .course-info h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+
+  .start-course-btn,
+  .reset-progress-btn {
+    width: 90%;
+    max-width: 300px;
+    margin: 0 auto 15px auto;
+  }
+
+  .lesson-item {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .lesson-icon,
+  .lesson-status {
+    margin-bottom: 5px;
+  }
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Launching Course…</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+      #scoContainer {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <!-- 1) Carrega o loader SCORM customizado -->
+    <script src="./discere-scorm-loader.js"></script>
+
+    <!-- 2) Carrega seu wrapper SCORM -->
+    <script src="./DiscereScormController.js"></script>
+
+    <!-- 3) Função para criar e lançar o iframe do SCO -->
+    <script>
+      function launchSco() {
+        const iframe = document.createElement("iframe");
+        iframe.name = "courseContent";
+        iframe.src = "../scormcontent/index.html";
+        iframe.width = "100%";
+        iframe.height = "100%";
+        iframe.style.border = "none";
+
+        iframe.onload = () => {
+          // Expõe no iframe a API carregada pelo loader
+          iframe.contentWindow.API = window.API;
+          iframe.contentWindow.API_1484_11 = window.API_1484_11;
+          // Expõe também o wrapper para o SCO usá-lo
+          iframe.contentWindow.DiscereSCORM = window.DiscereSCORM;
+          // Inicializa a comunicação SCORM
+          iframe.contentWindow.DiscereSCORM.initialize();
+        };
+
+        document.getElementById("scoContainer").appendChild(iframe);
+      }
+
+      // Dispara o SCO após terminar o carregamento da página
+      window.addEventListener("load", launchSco);
+    </script>
+  </head>
+
+  <body>
+    <div id="scoContainer"></div>
+  </body>
+</html>

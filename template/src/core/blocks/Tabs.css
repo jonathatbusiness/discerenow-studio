@@ -1,0 +1,164 @@
+button {
+  border-radius: 8px 8px 0 0;
+}
+.tabs-block-container {
+  width: 100%;
+  padding: 30px 20px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.tabs-block {
+  display: flex;
+  flex-direction: row;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: rgb(255, 255, 255);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tabs-block-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: rgb(255, 255, 255);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tabs-header-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tabs-header {
+  display: flex;
+
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  font-size: 18px;
+  background-color: #efefef;
+  border-radius: 10px 10px 0 0;
+  scrollbar-width: none;
+
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+}
+
+.tabs-header::-webkit-scrollbar {
+  display: none;
+}
+
+button:focus {
+  outline: none;
+}
+
+.scroll-button {
+  background-color: var(--btn-bg, #4caf50);
+  border: none;
+  color: white;
+  font-size: 10px;
+  width: 30px;
+  height: 50px;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px 5px;
+  flex-shrink: 0;
+  transition:
+    filter 0.3s ease,
+    transform 0.2s ease;
+  box-sizing: border-box;
+}
+
+.scroll-button svg {
+  color: #ffffff;
+}
+
+.scroll-button:hover {
+  filter: brightness(0.85);
+  transform: translateY(-2px);
+}
+
+.scroll-button.left {
+  order: -1;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #555555;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  color: var(--bold-color, #213547);
+  background-color: #ffffff;
+  border: none;
+  border-bottom: 3px solid var(--bold-color, #213547);
+}
+
+.tab-button:hover {
+  color: #213547;
+}
+
+.tab-content {
+  padding: 10px 20px;
+}
+
+.tab-content p {
+  margin-bottom: 15px;
+}
+
+.tab-image {
+  position: relative;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.tab-image img {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.tab-image img {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.overlay-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px;
+  border-radius: 50%;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tab-image:hover .overlay-icon {
+  opacity: 1;
+}
+
+.tab-subtitle {
+  text-align: center;
+}

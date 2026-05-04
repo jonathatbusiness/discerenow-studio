@@ -1,0 +1,116 @@
+.accordion-block-container {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 30px 20px;
+}
+
+.accordion-block {
+  width: 100%;
+  max-width: 800px;
+  margin: 0px auto;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+.accordion-item {
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.accordion-header span,
+.accordion-header svg {
+  color: #213547;
+  font-weight: bold;
+}
+
+.accordion-content {
+  margin-top: 10px;
+}
+
+.accordion-content p {
+  color: #213547;
+}
+
+.accordion-image-wrapper {
+  margin-top: 15px;
+  position: relative;
+}
+
+.accordion-image-wrapper img {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.accordion-subtitle {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 6px;
+  color: #213547;
+}
+
+.overlay-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px;
+  border-radius: 50%;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.accordion-image-wrapper:hover .overlay-icon {
+  opacity: 1;
+}
+
+@media screen and (max-width: 768px) {
+  .accordion-block-container {
+    padding: 20px 10px;
+    box-sizing: border-box;
+  }
+
+  .accordion-block {
+    padding: 15px;
+  }
+
+  .accordion-header {
+    font-size: 16px;
+
+    align-items: flex-start;
+    gap: 5px;
+    width: 100%;
+  }
+
+  .accordion-content p {
+    font-size: 15px !important;
+  }
+
+  .accordion-image-wrapper img {
+    max-height: 300px;
+    object-fit: contain;
+  }
+
+  .accordion-subtitle {
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .overlay-icon {
+    top: 4px;
+    right: 4px;
+    padding: 4px;
+    font-size: 12px;
+  }
+}

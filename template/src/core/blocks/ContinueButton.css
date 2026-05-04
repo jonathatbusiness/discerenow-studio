@@ -1,0 +1,23 @@
+button {
+  border-radius: 0px;
+}
+
+.continue-button {
+  width: 100%;
+  color: #fff;
+  font-size: 18px;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 0px;
+  cursor: pointer;
+  /* Mudamos a transição para atuar no brilho (filter) em vez do background */
+  transition:
+    filter 0.3s ease,
+    transform 0.2s ease;
+}
+
+.continue-button:hover {
+  /* Isso escurece a cor atual em 15%, seja ela laranja, azul, roxa ou verde */
+  filter: brightness(0.85);
+  transform: translateY(-2px); /* Efeito suave de elevação */
+}
