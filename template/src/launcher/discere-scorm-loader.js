@@ -8,9 +8,9 @@
   "use strict";
 
   /**
-   * Busca a API SCORM 1.2 subindo na hierarquia de janelas.
-   * @param {Window} win - janela inicial para busca
-   * @returns {Object|null} - referência à API SCORM 1.2 ou null
+   * Searches the window hierarchy for the SCORM 1.2 API.
+   * @param {Window} win - Window where the search starts.
+   * @returns {Object|null} SCORM 1.2 API reference, when available.
    */
   function findAPI(win) {
     var maxTries = 500;
@@ -28,9 +28,9 @@
   }
 
   /**
-   * Busca a API SCORM 2004 (API_1484_11) subindo na hierarquia de janelas.
-   * @param {Window} win - janela inicial para busca
-   * @returns {Object|null} - referência à API SCORM 2004 ou null
+   * Searches the window hierarchy for the SCORM 2004 API (API_1484_11).
+   * @param {Window} win - Window where the search starts.
+   * @returns {Object|null} SCORM 2004 API reference, when available.
    */
   function findAPI2004(win) {
     var maxTries = 500;
@@ -48,7 +48,7 @@
   }
 
   /**
-   * Em casos de pop-up ou janela separada, tenta buscar na window.opener.
+   * Searches window.opener when the SCO runs in a pop-up or separate window.
    * @returns {Object|null}
    */
   function findAPIInOpener() {
@@ -63,13 +63,13 @@
     return null;
   }
 
-  // Tenta SCORM 2004 primeiro, depois SCORM 1.2, e por fim em opener
+  // Prefer SCORM 2004, then SCORM 1.2, and finally search the opener.
   var scormAPI = findAPI2004(window) || findAPI(window) || findAPIInOpener();
 
   if (!scormAPI) {
     console.error("❌ SCORM API não encontrada pelo discere-scorm-loader.");
   } else {
-    // Expondo no escopo global para o driver utilizar
+    // Expose the resolved APIs for the SCORM driver.
     if (scormAPI.Initialize && typeof scormAPI.Initialize === "function") {
       window.API_1484_11 = scormAPI;
       console.log(

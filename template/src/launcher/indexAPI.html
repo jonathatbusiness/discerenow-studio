@@ -16,13 +16,13 @@
       }
     </style>
 
-    <!-- 1) Carrega o loader SCORM customizado -->
+    <!-- Load the custom SCORM API loader. -->
     <script src="./discere-scorm-loader.js"></script>
 
-    <!-- 2) Carrega seu wrapper SCORM -->
+    <!-- Load the DiscereNow SCORM wrapper. -->
     <script src="./DiscereScormController.js"></script>
 
-    <!-- 3) Função para criar e lançar o iframe do SCO -->
+    <!-- Create and launch the SCO iframe. -->
     <script>
       function launchSco() {
         const iframe = document.createElement("iframe");
@@ -33,19 +33,19 @@
         iframe.style.border = "none";
 
         iframe.onload = () => {
-          // Expõe no iframe a API carregada pelo loader
+          // Expose the API resolved by the loader to the SCO iframe.
           iframe.contentWindow.API = window.API;
           iframe.contentWindow.API_1484_11 = window.API_1484_11;
-          // Expõe também o wrapper para o SCO usá-lo
+          // Expose the wrapper used by the course runtime.
           iframe.contentWindow.DiscereSCORM = window.DiscereSCORM;
-          // Inicializa a comunicação SCORM
+          // Initialize SCORM communication.
           iframe.contentWindow.DiscereSCORM.initialize();
         };
 
         document.getElementById("scoContainer").appendChild(iframe);
       }
 
-      // Dispara o SCO após terminar o carregamento da página
+      // Launch the SCO after the page finishes loading.
       window.addEventListener("load", launchSco);
     </script>
   </head>

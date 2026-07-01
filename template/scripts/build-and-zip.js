@@ -134,10 +134,8 @@ async function injectSeoMetaTags(targetPath) {
   tags.push(`<meta property="og:type" content="website">`)
   tags.push(`<meta name="twitter:card" content="summary_large_image">`)
 
-  // Remove <title> antigo, se houver
   html = html.replace(/<title>.*?<\/title>/i, '')
 
-  // Injeta antes do </head>
   html = html.replace(/<\/head>/i, `  ${tags.join('\n  ')}\n</head>`)
 
   await fs.writeFile(targetPath, html, 'utf-8')

@@ -56,7 +56,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box; /* Ensures padding is included in width/height */
+  box-sizing: border-box;
 }
 
 .flipcard-back {
@@ -65,7 +65,7 @@
 
 .flipcard-image {
   position: relative;
-  width: 100%; /* Ensure image container takes full width */
+  width: 100%;
 }
 
 .flipcard-image img {

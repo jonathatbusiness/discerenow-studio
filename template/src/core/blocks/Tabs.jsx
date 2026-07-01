@@ -40,8 +40,8 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
       }
     }
 
-    checkScroll() // Verifica na montagem
-    window.addEventListener('resize', checkScroll) // Verifica no resize
+    checkScroll()
+    window.addEventListener('resize', checkScroll)
 
     return () => window.removeEventListener('resize', checkScroll)
   }, [])

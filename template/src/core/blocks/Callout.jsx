@@ -1,6 +1,6 @@
 import blockThemes from "../../theme/blockThemes";
 import "./Callout.css";
-import { motion } from "framer-motion"; // ⚡ Adicionado
+import { motion } from "framer-motion";
 
 import { Info, AlertTriangle, Lightbulb } from "lucide-react";
 

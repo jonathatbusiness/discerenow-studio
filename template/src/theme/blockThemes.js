@@ -1,5 +1,5 @@
 const blockThemes = {
-  // ───────── TEMA FALLBACK (OBRIGATÓRIO PARA NÃO QUEBRAR OS BLOCOS) ─────────
+  // Required fallback used when a block theme is missing.
   default: {
     label: 'Corporativo Moderno 1',
     backgroundColor: '#e0e7eb',
@@ -8,7 +8,7 @@ const blockThemes = {
     buttonColor: '#007bff'
   },
 
-  // ───────── CORPORATIVOS MODERNOS ─────────
+  // ───────── Modern corporate ─────────
   corporativo1: {
     label: 'Corporativo Moderno 1',
     backgroundColor: '#e0e7eb',
@@ -31,7 +31,7 @@ const blockThemes = {
     buttonColor: '#9b59b6'
   },
 
-  // ───────── AUDACIOSOS ─────────
+  // ───────── Bold ─────────
   audacioso1: {
     label: 'Audacioso 1',
     backgroundColor: '#fdfbe7',
@@ -54,7 +54,7 @@ const blockThemes = {
     buttonColor: '#6c5ce7'
   },
 
-  // ───────── NOTURNOS ─────────
+  // ───────── Dark ─────────
   noturno1: {
     label: 'Noturno 1',
     backgroundColor: '#2c3e50',

@@ -8,7 +8,7 @@ const Video = ({ theme, link, videoSubtitle, textAlign, fontSize }) => {
     if (!url) return null
     const clean = (id) => id.split('?')[0].split('&')[0].split('/')[0]
 
-    // YouTube — vários formatos
+    // Support the common YouTube URL formats.
     if (url.includes('youtu.be/')) {
       const id = clean(url.split('youtu.be/')[1] || '')
       return id ? `https://www.youtube.com/embed/${id}` : null
@@ -26,17 +26,16 @@ const Video = ({ theme, link, videoSubtitle, textAlign, fontSize }) => {
       return id ? `https://www.youtube.com/embed/${id}` : null
     }
     if (url.includes('youtube.com/embed/')) {
-      // já está no formato embed, devolve a URL como está
       return url
     }
 
-    // Vimeo
+    // Vimeo URLs use a numeric video identifier.
     if (url.includes('vimeo.com/')) {
       const id = clean(url.split('vimeo.com/')[1] || '')
       return id ? `https://player.vimeo.com/video/${id}` : null
     }
 
-    return null // Se não for embed reconhecido
+    return null
   }
 
   const embedLink = processEmbedLink(link)

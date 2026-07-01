@@ -3,7 +3,7 @@ const SUSPEND_KEY = "progressMap";
 const keyPrefix = `${courseData.courseId}_`;
 
 /**
- * Restaura progresso salvo no suspend_data e atualiza o localStorage
+ * Restores progress from suspend_data and updates localStorage.
  */
 export function restoreFromSuspend(onFinish) {
   const api = window.DiscereSCORM;
@@ -13,7 +13,7 @@ export function restoreFromSuspend(onFinish) {
     return;
   }
 
-  //––– SCORM ambiente: limpa cache local para usar só cmi.suspend_data –––
+  // In SCORM mode, suspend_data is the source of truth instead of stale local state.
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith(keyPrefix)) {
       localStorage.removeItem(key);
@@ -44,14 +44,13 @@ export function restoreFromSuspend(onFinish) {
     Object.entries(progressMap).forEach(([lessonKey, percent]) => {
       console.log(`[SCORM DEBUG] restaurando ${lessonKey} = ${percent}%`);
 
-      // grava progresso
       const progressKey = `${keyPrefix}progress_${lessonKey}`;
       localStorage.setItem(progressKey, percent.toString());
       console.log(
         `[SCORM DEBUG] localStorage.setItem('${progressKey}', '${percent}')`
       );
 
-      // simula seenBlocks
+      // Rebuild the visible-block state from the persisted percentage.
       const totalBlocks = 100;
       const vistosSimulados = Array.from(
         { length: Math.floor((percent / 100) * totalBlocks) },
@@ -65,7 +64,6 @@ export function restoreFromSuspend(onFinish) {
         )}')`
       );
 
-      // lições concluídas
       if (percent === 100) {
         const compKey = `${keyPrefix}completedLessons`;
         const completed = JSON.parse(localStorage.getItem(compKey) || "[]");
@@ -89,7 +87,7 @@ export function restoreFromSuspend(onFinish) {
 }
 
 /**
- * Atualiza o suspend_data com a maior porcentagem já registrada por lição
+ * Stores the highest recorded percentage per lesson in suspend_data.
  */
 export function syncToSuspend(lessonKey, newPercent) {
   const api = window.DiscereSCORM;

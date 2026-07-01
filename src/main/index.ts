@@ -10,7 +10,6 @@ import {
 } from './parser/lessonWriter'
 import { buildAndExportScorm, buildAndExportWeb, checkNpmAvailable } from './runner/scormRunner'
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
@@ -32,8 +31,6 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -41,28 +38,20 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
   electronApp.setAppUserModelId('com.discerenow.studio')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
   ipcMain.handle('app:getLocale', async () => {
     return app.getLocale()
   })
 
-  // ────── DiscereNow Studio: IPC handlers ──────
+  // ────── Dialog IPC handlers ──────
   ipcMain.handle('dialog:pickDocx', async () => {
     const result = await dialog.showOpenDialog({
       title: 'Selecionar documento Word',
@@ -89,10 +78,7 @@ app.whenReady().then(() => {
     })
     return result.canceled ? null : result.filePath
   })
-  // ─────────────────────────────────────────────
-
-  // ────── DiscereNow Studio: pipeline de geração ──────
-  // Cache do último parse (mantido no main process até nova chamada de parseDocx)
+  // Cache the latest parse in the main process to avoid parsing the same file twice.
   let lastParseCache: {
     docxPath: string
     parseResult: Awaited<ReturnType<typeof parseDocxToCourseTree>>
@@ -122,7 +108,6 @@ app.whenReady().then(() => {
       }
     ) => {
       try {
-        // Reaproveita cache se for o mesmo docx, senão re-parseia.
         let parseResult
         if (lastParseCache && lastParseCache.docxPath === payload.docxPath) {
           parseResult = lastParseCache.parseResult
@@ -131,7 +116,6 @@ app.whenReady().then(() => {
           lastParseCache = { docxPath: payload.docxPath, parseResult }
         }
 
-        // Aplica temas escolhidos pelo usuário antes de escrever.
         if (payload.themesByBlock) {
           applyThemesToTree(parseResult.tree, payload.themesByBlock)
         }
@@ -161,8 +145,6 @@ app.whenReady().then(() => {
   ipcMain.handle('studio:openPath', async (_event, p: string) => {
     shell.showItemInFolder(p)
   })
-  // ────────────────────────────────────────────────────
-
   ipcMain.handle('studio:checkNpm', async () => {
     const version = await checkNpmAvailable()
     return { available: version !== null, version }
@@ -219,6 +201,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

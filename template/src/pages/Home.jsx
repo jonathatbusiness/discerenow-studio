@@ -48,12 +48,10 @@ const Home = () => {
     const trySyncWithSuspend = (retries = 5) => {
       const scorm = window.DiscereSCORM;
       if (scorm) {
-        // Inicializa a API SCORM se ainda não estiver ativa
         if (!scorm.isActive) {
           const ok = scorm.initialize();
           console.log("🎯 SCORM initialize() →", ok);
         }
-        // Se ativou, restaura do suspend_data e sinaliza
         if (scorm.isActive) {
           console.log(
             "🔄 SCORM ativo — restaurando progresso do suspend_data..."
@@ -62,7 +60,7 @@ const Home = () => {
           return;
         }
       }
-      // Se não detectou SCORM, tenta de novo ou cai em modo web
+      // Allow the LMS API time to become available before falling back to web mode.
       if (!scorm && retries > 0) {
         setTimeout(() => trySyncWithSuspend(retries - 1), 100);
       } else if (!scorm) {
@@ -84,7 +82,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    // só rodar depois que o SCORM tiver restaurado o suspend_data
+    // Wait until SCORM progress restoration completes.
     if (!suspendRestored || importedChapters.length === 0) return;
 
     const completedLessons = JSON.parse(
@@ -131,7 +129,6 @@ const Home = () => {
   }, [chapters]);
 
   useEffect(() => {
-    // Verifica se há progresso em qualquer lição
     let hasAnyProgress = false;
 
     importedChapters.forEach((chap) => {
@@ -155,7 +152,6 @@ const Home = () => {
   }, []);
 
   const handleStartCourse = () => {
-    // 1) procura por lição onde progress < 100
     for (const chap of chapters) {
       for (const les of chap.lessons) {
         const key = `${chap.id}_${les.id}`;
@@ -172,7 +168,6 @@ const Home = () => {
       }
     }
 
-    // 2) se todas as lições já estiverem a 100%, vai para a primeira lição nova
     if (chapters.length > 0) {
       const [firstChap] = chapters;
       const [firstLes] = firstChap.lessons;
@@ -182,8 +177,7 @@ const Home = () => {
     }
   };
 
-  // Se estivermos num ambiente SCORM, baseamos em localProgress (que veio do suspend_data);
-  // senão, em hasStartedCourse (modo web/dev)
+  // SCORM mode uses restored suspend_data; web mode uses local course state.
   const scormApi = window.DiscereSCORM;
   const courseStarted = scormApi ? localProgress > 0 : hasStartedCourse;
 
@@ -227,7 +221,6 @@ const Home = () => {
 
                     sessionStorage.clear();
 
-                    // Garante que, se estiver em SCORM, o suspend_data será recarregado
                     if (window.DiscereSCORM?.isActive) {
                       alert(
                         "Local data cleared. On reload, progress will be restored from the LMS."

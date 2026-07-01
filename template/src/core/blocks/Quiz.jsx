@@ -9,6 +9,9 @@ const Quiz = ({
   theme,
   textAlign,
   fontSize,
+  questionFontSize,
+  optionFontSize,
+  feedbackFontSize,
   question,
   type,
   options,
@@ -22,6 +25,9 @@ const Quiz = ({
   const [selected, setSelected] = useState([])
   const [submitted, setSubmitted] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
+  const resolvedQuestionFontSize = questionFontSize || fontSize
+  const resolvedOptionFontSize = optionFontSize || fontSize
+  const resolvedFeedbackFontSize = feedbackFontSize || optionFontSize || fontSize
 
   const handleChange = (option) => {
     if (type === 'single') {
@@ -55,12 +61,16 @@ const Quiz = ({
   return (
     <div className="quiz-block-container" style={{ backgroundColor, '--btn-bg': buttonColor }}>
       <div className="quiz-block">
-        <h3 style={{ textAlign, fontSize }}>{question}</h3>
+        <h3 style={{ textAlign, fontSize: resolvedQuestionFontSize }}>{question}</h3>
         <div className="default-divider"></div>
 
-        <div className="quiz-options" style={{ textAlign, fontSize }}>
+        <div className="quiz-options" style={{ textAlign }}>
           {options.map((option, index) => (
-            <label key={index} className={`quiz-option ${submitted ? 'disabled' : ''}`}>
+            <label
+              key={index}
+              className={`quiz-option ${submitted ? 'disabled' : ''}`}
+              style={{ fontSize: resolvedOptionFontSize }}
+            >
               <input
                 type={type === 'single' ? 'radio' : 'checkbox'}
                 name="quiz"
@@ -104,7 +114,9 @@ const Quiz = ({
                   <FiX className="feedback-icon incorrect" />
                 )}
               </div>
-              <p>{isCorrect ? feedbackCorrect : feedbackIncorrect}</p>
+              <p style={{ fontSize: resolvedFeedbackFontSize }}>
+                {isCorrect ? feedbackCorrect : feedbackIncorrect}
+              </p>
 
               {!isCorrect && (
                 <button className="quiz-retry" onClick={resetQuiz}>

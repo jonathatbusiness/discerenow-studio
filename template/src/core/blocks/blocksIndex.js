@@ -1,4 +1,3 @@
-// src/core/blocks/blocksIndex.js
 import Paragraph from "./Paragraph";
 import ImgText from "./ImgText";
 import Video from "./Video";

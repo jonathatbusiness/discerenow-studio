@@ -17,7 +17,7 @@ type CourseMetadata = {
   successMode: SuccessMode
 }
 
-// Estrutura mínima da árvore recebida do parser
+// Minimal shape of the tree returned by the parser.
 type TreeBlock = { blockType: string; theme?: string; [k: string]: unknown }
 type TreeLesson = { chapterId: string; lessonId: string; name: string; blocks: TreeBlock[] }
 type TreeChapter = { id: string; chapterName: string; lessons: TreeLesson[] }
@@ -142,7 +142,6 @@ function App(): React.JSX.Element {
   const [finalZipPath, setFinalZipPath] = useState<string>('')
   const logBoxRef = useRef<HTMLPreElement | null>(null)
 
-  // Checa npm
   useEffect(() => {
     void window.api.checkNpm().then((r) => {
       setNpmAvailable(r.available)
@@ -150,7 +149,6 @@ function App(): React.JSX.Element {
     })
   }, [])
 
-  // Logs do build
   useEffect(() => {
     const off = window.api.onBuildLog((line) => setLogs((prev) => [...prev, line]))
     return off
@@ -169,7 +167,6 @@ function App(): React.JSX.Element {
     const p = await window.api.pickDocx()
     if (p) {
       setDocxPath(p)
-      // Se trocou o docx, descarta a árvore antiga
       setTree(null)
       setThemesByBlock({})
     }

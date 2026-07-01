@@ -7,7 +7,7 @@ import type { CourseMetadataInput } from '../parser/lessonWriter'
 
 export type RunnerLog = (line: string) => void
 
-// ───────── Verificação de npm ─────────
+// ───────── npm availability ─────────
 
 export async function checkNpmAvailable(): Promise<string | null> {
   return new Promise((resolve) => {
@@ -23,7 +23,7 @@ export async function checkNpmAvailable(): Promise<string | null> {
   })
 }
 
-// ───────── Execução de comando com streaming ─────────
+// ───────── Command execution with streamed output ─────────
 
 function runCommand(cmd: string, args: string[], cwd: string, onLog: RunnerLog): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -54,7 +54,7 @@ function runCommand(cmd: string, args: string[], cwd: string, onLog: RunnerLog):
   })
 }
 
-// ───────── Etapas reutilizáveis ─────────
+// ───────── Reusable build steps ─────────
 
 async function ensureNodeModules(templateRoot: string, onLog: RunnerLog): Promise<void> {
   const nm = join(templateRoot, 'node_modules')
@@ -132,7 +132,7 @@ async function injectSeoMetaTags(
   onLog('✓ SEO metadata injected into index.html')
 }
 
-// ───────── Localizar zip SCORM gerado ─────────
+// ───────── Generated SCORM package lookup ─────────
 
 async function findGeneratedScormZip(templateRoot: string): Promise<string | null> {
   const scormDir = join(templateRoot, 'SCORM')
@@ -148,7 +148,7 @@ async function findGeneratedScormZip(templateRoot: string): Promise<string | nul
   return stats[0].p
 }
 
-// ───────── Zipar dist/ pra build web ─────────
+// ───────── Web build archive ─────────
 
 async function zipDirectory(srcDir: string, destZipPath: string, onLog: RunnerLog): Promise<void> {
   onLog('▶ Zipando arquivos da versão web...')
@@ -178,7 +178,7 @@ async function zipDirectory(srcDir: string, destZipPath: string, onLog: RunnerLo
   onLog(`✓ Versão web zipada em: ${destZipPath}`)
 }
 
-// ───────── APIs públicas ─────────
+// ───────── Public APIs ─────────
 
 export type RunResult = {
   ok: boolean
