@@ -15,8 +15,8 @@
 }
 
 a {
-  color: inherit; /* Herda a cor do elemento pai */
-  text-decoration: none; /* Remove o sublinhado (opcional) */
+  color: inherit;
+  text-decoration: none;
 }
 
 a:hover {
@@ -54,7 +54,6 @@ a:hover {
 }
 
 
-/* MODAL GERAL - Abordagem completa de centralização */
 .img-modal {
   position: fixed;
   top: 0;
@@ -83,15 +82,11 @@ a:hover {
   transform: translate(-50%, -50%);
 }
 
-/* Garantia de centralização em dispositivos móveis */
 @media screen and (max-width: 767px) {
   .img-modal img {
     max-width: 85%;
     max-height: 70%;
-    /* Mantém a transformação centralizada */
     transform: translate(-50%, -50%);
-    /* Não aplica qualquer margem que possa interferir */
     margin: 0;
   }
 }
-/* MODAL GERAL - END */

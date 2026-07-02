@@ -1,6 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import "./Header.css";
+import { Link } from 'react-router-dom'
+import './Header.css'
 
 const Header = () => {
   return (
@@ -11,13 +10,13 @@ const Header = () => {
             src="./DiscereNowLogo.webp"
             alt="Logo do Curso"
             className="logo"
-            style={{ cursor: "pointer" }}
+            style={{ cursor: 'pointer' }}
           />
         </Link>
       </div>
       <div className="header-content"></div>
     </header>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

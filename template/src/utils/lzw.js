@@ -1,4 +1,3 @@
-// src/utils/lzw.js
 
 const LZW = {
   compress(uncompressed) {

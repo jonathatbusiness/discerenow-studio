@@ -67,6 +67,9 @@
   border: 2px solid #ccc;
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  flex: 0 0 20px;
   border-radius: 50%;
   position: relative;
   cursor: pointer;
@@ -95,6 +98,9 @@
   border: 2px solid #ccc;
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  flex: 0 0 20px;
 
   position: relative;
   cursor: pointer;

@@ -1,0 +1,25 @@
+.block-columns {
+  width: 100%;
+}
+
+.block-columns__grid {
+  width: 60%;
+  margin: 0 auto;
+  padding: 30px 20px;
+  display: grid;
+  grid-template-columns: repeat(var(--column-count), minmax(0, 1fr));
+  gap: 32px;
+}
+
+.block-columns__item p {
+  margin: 0 0 14px;
+  line-height: 1.6;
+}
+
+@media screen and (max-width: 768px) {
+  .block-columns__grid {
+    width: 90%;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

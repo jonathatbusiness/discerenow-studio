@@ -60,13 +60,13 @@
     available = initialized;
 
     if (initialized) {
-      // Marca como “incomplete” no início do SCO
+      // Start the SCO as incomplete until the course completion criteria are met.
       const statusKey = isScorm12
         ? "cmi.core.lesson_status"
         : "cmi.completion_status";
       setValue(statusKey, "incomplete");
       commit();
-      // Inicia heartbeat para commits periódicos
+      // Periodic commits reduce progress loss during long sessions.
       startHeartbeat(20000);
     }
 
@@ -81,7 +81,6 @@
 
       if (successMode === "onComplete") {
         setValue(statusKey, "passed");
-        //setScore(100, 100, 0); // Simula aprovação
       } else if (successMode === "onScore") {
         const raw = parseFloat(getValue("cmi.core.score.raw"));
         const max = parseFloat(getValue("cmi.core.score.max")) || 100;
@@ -90,7 +89,7 @@
           const passed = raw >= 0.6 * max;
           setValue(statusKey, passed ? "passed" : "failed");
         } else {
-          // Se não tem nota, só marca como completo
+          // Without a recorded score, completion is the only reliable status.
           setValue(statusKey, "completed");
         }
       } else {
@@ -130,8 +129,8 @@
   function terminate() {
     if (!initialized || !available) return false;
     const res = isScorm12
-      ? api.LMSFinish("") // SCORM 1.2
-      : api.Terminate(""); // SCORM 2004
+      ? api.LMSFinish("")
+      : api.Terminate("");
 
     if (res !== "true" && res !== true) {
       const code = isScorm12 ? api.LMSGetLastError() : api.GetLastError();
@@ -281,9 +280,9 @@
         commit();
         terminate();
       } else {
-        // Aguarda o commit de finalização antes de encerrar
+        // Give the LMS a brief opportunity to process the final commit.
         commit();
-        setTimeout(() => terminate(), 300); // Tempo mínimo para o LMS processar
+        setTimeout(() => terminate(), 300);
       }
     }
   });

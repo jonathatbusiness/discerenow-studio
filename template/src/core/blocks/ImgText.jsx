@@ -86,7 +86,6 @@ const ImgText = ({
         </div>
       </div>
 
-      {/* Modal para zoom */}
       {shouldZoom && showModal && (
         <div className="img-modal" onClick={toggleModal}>
           <img src={image} alt={altText || "Imagem ampliada"} />

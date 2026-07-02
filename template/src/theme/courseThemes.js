@@ -1,5 +1,5 @@
 const courseThemes = {
-  // ───────── TEMA FALLBACK (OBRIGATÓRIO PARA NÃO QUEBRAR O NAVCOLOR) ─────────
+  // Required fallback used when the selected course theme is missing.
   default: {
     fontColor: '#ffffff',
     headerGradient: 'linear-gradient(to left, #0056b3, #003d80)',
@@ -7,7 +7,7 @@ const courseThemes = {
     footerColor: '#003d80'
   },
 
-  // ───────── CORPORATIVOS MODERNOS ─────────
+  // ───────── Modern corporate ─────────
   corporativo1: {
     fontColor: '#ffffff',
     headerGradient: 'linear-gradient(to left, #0056b3, #003d80)',
@@ -27,7 +27,7 @@ const courseThemes = {
     footerColor: '#6c3483'
   },
 
-  // ───────── AUDACIOSOS ─────────
+  // ───────── Bold ─────────
   audacioso1: {
     fontColor: '#ffffff',
     headerGradient: 'linear-gradient(to left, #e68a00, #b36b00)',
@@ -47,7 +47,7 @@ const courseThemes = {
     footerColor: '#4e3dcc'
   },
 
-  // ───────── NOTURNOS ─────────
+  // ───────── Dark ─────────
   noturno1: {
     fontColor: '#e94560', 
     headerGradient: 'linear-gradient(to left, #16213e, #0f162a)',

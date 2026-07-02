@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Footer from '../components/Footer'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
 import courseData from '../content/courseData'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAlignLeft } from '@fortawesome/free-solid-svg-icons'
@@ -39,7 +39,7 @@ const Lesson = () => {
   const [chapters, setChapters] = useState([])
   const [progressMap, setProgressMap] = useState({})
   const [sidebarVisible, setSidebarVisible] = useState(false)
-  const [setProgressTrigger] = useState(0)
+  const [, setProgressTrigger] = useState(0)
 
   const scormRef = useRef(null)
   const navigate = useNavigate()
@@ -59,8 +59,8 @@ const Lesson = () => {
     const waitForAPI = (retries = 5) => {
       const api = window.DiscereSCORM
       if (api) {
-        api.initialize() // garante INIT
-        scormRef.current = api // seta o ref
+        api.initialize()
+        scormRef.current = api
         console.log('✅ SCORM API pronta em Lesson')
       } else if (retries > 0) {
         setTimeout(() => waitForAPI(retries - 1), 100)
@@ -92,7 +92,7 @@ const Lesson = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop
-      setShowHeaderOffset(scrollTop < 70) // se rolou +70px, tira o espaço
+      setShowHeaderOffset(scrollTop < 70)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -119,7 +119,7 @@ const Lesson = () => {
     const Component = blocksMap[block.blockType]
     if (!Component) return null
 
-    // Tratamento especial para continueButton
+    // Continue buttons control progressive reveal and lesson navigation.
     if (block.blockType === 'continueButton') {
       const totalContinueButtons = currentLesson.blocks.filter(
         (b) => b.blockType === 'continueButton'
@@ -141,7 +141,6 @@ const Lesson = () => {
       )
     }
 
-    // Componente padrão
     return <Component key={i} {...block} />
   }
 
@@ -165,7 +164,6 @@ const Lesson = () => {
       const compressed = LZW.compress(JSON.stringify(updatedMap))
       scormRef.current?.setDataChunk(compressed)
 
-      // Calcular progresso geral do curso
       let totalVistos = 0
       let totalBlocks = 0
 
@@ -208,7 +206,7 @@ const Lesson = () => {
     }
   }
 
-  // ✅ Novo useEffect: detecção de conclusão total e envio ao SCORM
+  // Report completion only after every lesson has been completed.
   useEffect(() => {
     const allLessonKeys = importedChapters.flatMap((chap) =>
       chap.lessons.map((les) => `${chap.id}_${les.id}`)
@@ -252,13 +250,13 @@ const Lesson = () => {
       const blocksCount = blocks.length
       let initialUnlock = []
 
-      // Se só existe um botão e ele está no final, desbloqueie tudo
+      // A single final continue button should not hide the lesson content.
       const hasOnlyOneContinueAtEnd =
         blocks.filter((b) => b.blockType === 'continueButton').length === 1 &&
         blocks[blocksCount - 1]?.blockType === 'continueButton'
 
       if (hasOnlyOneContinueAtEnd) {
-        initialUnlock = blocks.map((_, i) => i) // desbloqueia tudo
+        initialUnlock = blocks.map((_, i) => i)
       } else {
         for (let i = 0; i < blocksCount; i++) {
           initialUnlock.push(i)
@@ -283,7 +281,6 @@ const Lesson = () => {
   }, [clickedContinueButtons, lessonKey])
 
   useEffect(() => {
-    // Sempre que mudar de lição, volta ao topo e limpa flag interna
     window.scrollTo(0, 0)
     sessionStorage.removeItem('internalNav')
     window.__navigatingInternally__ = false
@@ -305,8 +302,7 @@ const Lesson = () => {
       saveProgress(updated)
 
       const progressoAtual = updated.length / currentLesson.blocks.length
-      const progressoSalvo = scormRef.current?.getProgress?.() || 0
-      if (!isScorm12 && progressoAtual > progressoSalvo) {
+      if (!isScorm12) {
         scormRef.current?.setProgress(progressoAtual)
       }
 
@@ -372,7 +368,7 @@ const Lesson = () => {
       const nextBlockIndex = uniqueSorted.find((i) => i > index)
       const nextEl = document.getElementById(`block-${nextBlockIndex}`)
       if (nextEl) {
-        const offset = 100 // ajuste conforme altura do cabeçalho ou visual ideal
+        const offset = 100
         const top = nextEl.getBoundingClientRect().top + window.pageYOffset - offset
 
         window.scrollTo({ top, behavior: 'smooth' })
@@ -419,7 +415,6 @@ const Lesson = () => {
         syncToSuspend(lessonKey, 100)
       }
 
-      // 🔄 Força Home a atualizar imediatamente mesmo na mesma aba
       sessionStorage.setItem('updateHomeChapters', 'true')
 
       setProgressMap((prev) => ({
@@ -434,15 +429,14 @@ const Lesson = () => {
       const allSeenBlocks = Array.from({ length: totalBlocks }, (_, i) => i)
       console.warn('⚠️ Corrigindo blocos não marcados como vistos automaticamente.')
       saveProgress(allSeenBlocks)
-      storage.set(`progress_${lessonKey}`, 100) // atualiza barra
-      markLessonComplete(lessonKey) // ✅ garante que apareça como concluída
+      storage.set(`progress_${lessonKey}`, 100)
+      markLessonComplete(lessonKey)
       if (window.DiscereSCORM?.isActive) {
         syncToSuspend(lessonKey, 100)
       }
 
       storage.set(`seen_${lessonKey}`, JSON.stringify(allSeenBlocks))
     } else {
-      // Atualiza o mapa normalmente, se ainda não estiver completo
       setProgressMap((prev) => ({
         ...prev,
         [lessonKey]: { seenBlocks: updated },
@@ -474,7 +468,6 @@ const Lesson = () => {
           <FaBars />
         </button>
 
-        {/* Sidebar fixa fora do fluxo principal */}
         <motion.div
           className="lesson-navigation"
           initial={false}
@@ -557,7 +550,6 @@ const Lesson = () => {
           </div>
         </motion.div>
 
-        {/* Área da lição que expande/encolhe */}
         <div className="lesson-area">
           <div className="lesson-header" style={{ background: theme.headerGradient }}>
             <h2 style={{ color: theme.fontColor }}>{currentLesson.name}</h2>

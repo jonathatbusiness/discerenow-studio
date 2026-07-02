@@ -104,7 +104,7 @@
 
   .block-imgtext img {
     max-width: 100%;
-    height: auto; /* opcional, se quiser adaptar */
+    height: auto;
   }
 }
 

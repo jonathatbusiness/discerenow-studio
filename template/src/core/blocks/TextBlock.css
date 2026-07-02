@@ -1,0 +1,25 @@
+.block-text {
+  width: 100%;
+}
+
+.block-text__inner {
+  width: 60%;
+  margin: 0 auto;
+  padding: 28px 20px;
+}
+
+.block-text__lead {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.block-text__inner p {
+  margin: 16px 0 0;
+  line-height: 1.65;
+}
+
+@media screen and (max-width: 768px) {
+  .block-text__inner {
+    width: 90%;
+  }
+}

@@ -1,12 +1,11 @@
 /**
- * Recebe a árvore do curso + metadados + zip do .docx, e escreve dentro
- * de template/:
- *  - template/src/content/courseData.js (sobrescrito)
- *  - template/src/content/chapters/cap_X/lesson_Y_Z.jsx (um por lição)
- *  - template/public/img/<courseId>/cover.<ext> (capa, se fornecida)
- *  - template/public/img/<courseId>/img-N.<ext> (imagens dos blocos imgText)
+ * Writes the course tree, metadata, and .docx assets into template/:
+ *  - template/src/content/courseData.js (overwritten)
+ *  - template/src/content/chapters/cap_X/lesson_Y_Z.jsx (one per lesson)
+ *  - template/public/img/<courseId>/cover.<ext> (when provided)
+ *  - template/public/img/<courseId>/img-N.<ext> (images used by supported blocks)
  *
- * Antes de escrever, limpa as pastas cap_X existentes e a pasta de imagens do curso.
+ * Existing cap_X directories and the course image directory are cleared first.
  */
 
 import { existsSync } from 'fs'
@@ -16,9 +15,11 @@ import type {
   AccordionItem,
   CardItem,
   FlipCardItem,
+  ImageCenteredBlock,
   ImgTextBlock,
   Lesson,
-  ParseResult
+  ParseResult,
+  ProcessStep
 } from './docxParser'
 
 export type CourseMetadataInput = {
@@ -33,7 +34,7 @@ export type CourseMetadataInput = {
   successMode: 'onComplete' | 'onScore' | 'none'
 }
 
-// ───────── Limpa campos internos (que começam com _) antes de serializar ─────────
+// ───────── Strip internal fields before serialization ─────────
 
 function stripInternal(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stripInternal)
@@ -48,7 +49,7 @@ function stripInternal(value: unknown): unknown {
   return value
 }
 
-// ───────── Serialização pretty ─────────
+// ───────── Pretty serialization ─────────
 
 function escapeString(s: string): string {
   return s
@@ -84,7 +85,7 @@ function serialize(value: unknown, indent: number = 2, level: number = 0): strin
   return 'null'
 }
 
-// ───────── Geração de courseData.js ─────────
+// ───────── courseData.js generation ─────────
 
 function renderCourseData(meta: CourseMetadataInput, courseImageWebPath: string): string {
   const obj = {
@@ -101,7 +102,7 @@ function renderCourseData(meta: CourseMetadataInput, courseImageWebPath: string)
   return `const courseData = ${serialize(obj)};\n\nexport default courseData;\n`
 }
 
-// ───────── Geração de lesson_X_Y.jsx ─────────
+// ───────── lesson_X_Y.jsx generation ─────────
 
 function renderLesson(lesson: Lesson): string {
   const obj = stripInternal({
@@ -114,8 +115,8 @@ function renderLesson(lesson: Lesson): string {
   return `export default ${serialize(obj)};\n`
 }
 
-// Aplica um mapa de temas { lessonKey: { blockIndex: theme } } na árvore.
-// lessonKey = `${chapterId}_${lessonId}`. Blocos sem entrada mantêm tema atual.
+// Applies { lessonKey: { blockIndex: theme } } selections to the course tree.
+// lessonKey = `${chapterId}_${lessonId}`. Blocks without a selection keep their theme.
 export function applyThemesToTree(
   tree: {
     chapters: Array<{
@@ -138,7 +139,7 @@ export function applyThemesToTree(
     }
   }
 }
-// ───────── Limpeza ─────────
+// ───────── Cleanup ─────────
 
 async function cleanChaptersDir(chaptersDir: string): Promise<void> {
   if (!existsSync(chaptersDir)) {
@@ -158,7 +159,7 @@ async function cleanCourseImgDir(courseImgDir: string): Promise<void> {
   await mkdir(courseImgDir, { recursive: true })
 }
 
-// ───────── Resolução das imagens dos blocos imgText ─────────
+// ───────── Embedded block image resolution ─────────
 
 async function resolveBlockImages(
   parseResult: ParseResult,
@@ -197,6 +198,19 @@ async function resolveBlockImages(
           continue
         }
 
+        if (block.blockType === 'imageCentered') {
+          const imageBlock = block as ImageCenteredBlock
+          imageBlock.image = await copyEmbeddedImage(imageBlock._embedRId)
+          continue
+        }
+
+        if (block.blockType === 'process') {
+          for (const item of block.items as ProcessStep[]) {
+            item.image = await copyEmbeddedImage(item._embedRId)
+          }
+          continue
+        }
+
         if (block.blockType === 'accordion' || block.blockType === 'tabs') {
           for (const item of block.items as AccordionItem[]) {
             item.img = await copyEmbeddedImage(item._embedRId)
@@ -224,7 +238,7 @@ async function resolveBlockImages(
   return counter
 }
 
-// ───────── Cópia da imagem de capa ─────────
+// ───────── Cover image copy ─────────
 
 async function copyCourseCover(
   sourcePath: string | null,
@@ -238,7 +252,7 @@ async function copyCourseCover(
   return `/img/${courseId}/cover${ext}`
 }
 
-// ───────── Função pública ─────────
+// ───────── Public API ─────────
 
 export type WriteResult = {
   courseDataPath: string
@@ -260,17 +274,13 @@ export async function writeCourseToTemplate(
   await cleanChaptersDir(chaptersDir)
   await cleanCourseImgDir(courseImgDir)
 
-  // 1) capa
   const coverWebPath = await copyCourseCover(meta.courseImage, courseImgDir, meta.courseId)
 
-  // 2) imagens dos blocos com suporte a imagem
   const imagesCopied = await resolveBlockImages(parseResult, meta.courseId, courseImgDir)
 
-  // 3) courseData.js
   const courseDataPath = join(contentDir, 'courseData.js')
   await writeFile(courseDataPath, renderCourseData(meta, coverWebPath), 'utf-8')
 
-  // 4) lições
   const lessonPaths: string[] = []
   for (const chapter of parseResult.tree.chapters) {
     const capDir = join(chaptersDir, `cap_${chapter.id}`)

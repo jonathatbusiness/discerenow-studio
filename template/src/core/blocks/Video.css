@@ -4,14 +4,14 @@
 }
 .video-block {
   width: 100%;
-  max-width: 800px; /* Limite máximo */
+  max-width: 800px;
   margin: 0px auto;
   padding: 20px;
 }
 
 .video-container {
   width: 100%;
-  aspect-ratio: 16/9; /* Mantém a proporção nativa moderna */
+  aspect-ratio: 16/9;
   overflow: hidden;
   border-radius: 12px;
 }

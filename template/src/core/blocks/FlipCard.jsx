@@ -12,7 +12,7 @@ const FlipCard = ({ theme, textAlign, fontSize, items }) => {
     })
   }
 
-  const { backgroundColor, fontColor, boldColor } = blockThemes[theme] || blockThemes.default
+  const { backgroundColor } = blockThemes[theme] || blockThemes.default
 
   return (
     <>

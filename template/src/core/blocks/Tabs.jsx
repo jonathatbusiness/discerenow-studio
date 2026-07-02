@@ -4,8 +4,7 @@ import './Tabs.css'
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
 const Tabs = ({ theme, textAlign, fontSize, items }) => {
-  const { backgroundColor, fontColor, boldColor, buttonColor } =
-    blockThemes[theme] || blockThemes.default
+  const { backgroundColor, boldColor, buttonColor } = blockThemes[theme] || blockThemes.default
 
   const [activeIndex, setActiveIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
@@ -40,8 +39,8 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
       }
     }
 
-    checkScroll() // Verifica na montagem
-    window.addEventListener('resize', checkScroll) // Verifica no resize
+    checkScroll()
+    window.addEventListener('resize', checkScroll)
 
     return () => window.removeEventListener('resize', checkScroll)
   }, [])
@@ -76,7 +75,7 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
           )}
         </div>
         <div className="tabs-block-content">
-          <div className="tab-content" style={{ textAlign, fontSize, boldColor }}>
+          <div className="tab-content" style={{ textAlign, fontSize }}>
             {items[activeIndex].content.map((text, i) => (
               <p key={i}>{text}</p>
             ))}

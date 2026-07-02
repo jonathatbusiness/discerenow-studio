@@ -5,11 +5,15 @@ yarn-debug.log*
 yarn-error.log*
 
 # Electron / Vite / build outputs
+addin/
+.bk/
+*.zip
 out/
 dist/
 dist-electron/
 .vite/
 *.local
+.eslintcache
 
 # IDEs
 .vscode/*
@@ -32,9 +36,9 @@ template/node_modules/
 template/dist/
 template/SCORM/
 template/.vite/
+template/temp_scorm_build/
 
-# Conteúdo gerado dinamicamente pelo Studio a partir do .docx
-# (descomente estas duas linhas quando o fluxo de geração estiver rodando,
-#  pra que cursos de teste não vão pro git)
-# template/src/content/courseData.js
-# template/src/content/chapters/cap_*/
+# Course content generated dynamically by Studio from a .docx file
+template/src/content/courseData.js
+template/src/content/chapters/cap_*/
+template/public/img/
