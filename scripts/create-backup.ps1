@@ -25,6 +25,7 @@ $patchPath = Join-Path $tempDir "changes.patch"
 
 New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
 New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
+New-Item -ItemType File -Force -Path $statusPath, $patchPath | Out-Null
 
 if (Test-Path $zipPath) {
   throw "Ja existe um backup com este nome: $zipPath"

@@ -15,9 +15,11 @@ import type {
   AccordionItem,
   CardItem,
   FlipCardItem,
+  ImageCenteredBlock,
   ImgTextBlock,
   Lesson,
-  ParseResult
+  ParseResult,
+  ProcessStep
 } from './docxParser'
 
 export type CourseMetadataInput = {
@@ -193,6 +195,19 @@ async function resolveBlockImages(
         if (block.blockType === 'imgText') {
           const imgBlock = block as ImgTextBlock
           imgBlock.image = await copyEmbeddedImage(imgBlock._embedRId)
+          continue
+        }
+
+        if (block.blockType === 'imageCentered') {
+          const imageBlock = block as ImageCenteredBlock
+          imageBlock.image = await copyEmbeddedImage(imageBlock._embedRId)
+          continue
+        }
+
+        if (block.blockType === 'process') {
+          for (const item of block.items as ProcessStep[]) {
+            item.image = await copyEmbeddedImage(item._embedRId)
+          }
           continue
         }
 

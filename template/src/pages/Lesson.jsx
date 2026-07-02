@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Footer from '../components/Footer'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
 import courseData from '../content/courseData'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAlignLeft } from '@fortawesome/free-solid-svg-icons'
@@ -39,7 +39,7 @@ const Lesson = () => {
   const [chapters, setChapters] = useState([])
   const [progressMap, setProgressMap] = useState({})
   const [sidebarVisible, setSidebarVisible] = useState(false)
-  const [setProgressTrigger] = useState(0)
+  const [, setProgressTrigger] = useState(0)
 
   const scormRef = useRef(null)
   const navigate = useNavigate()
@@ -302,8 +302,7 @@ const Lesson = () => {
       saveProgress(updated)
 
       const progressoAtual = updated.length / currentLesson.blocks.length
-      const progressoSalvo = scormRef.current?.getProgress?.() || 0
-      if (!isScorm12 && progressoAtual > progressoSalvo) {
+      if (!isScorm12) {
         scormRef.current?.setProgress(progressoAtual)
       }
 

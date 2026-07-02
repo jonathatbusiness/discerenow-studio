@@ -23,12 +23,19 @@ Word + add-in DiscereNow → DOCX estruturado → DiscereNow Studio → Web ou S
 ## Blocos educacionais disponíveis
 
 - Parágrafos
+- Títulos e subtítulos
+- Parágrafos com título ou subtítulo
+- Colunas de texto responsivas
+- Tabelas com cores do tema
+- Listas numeradas, de verificação e com marcadores
 - Imagem e texto
+- Imagens centralizadas com legenda opcional
 - Vídeos
 - Callouts
 - Acordeões
 - Abas
 - Cards
+- Carrosséis de processo com imagens opcionais
 - Flip cards
 - Quizzes de resposta única ou múltipla
 - Botões Continuar para revelação progressiva e navegação entre lições

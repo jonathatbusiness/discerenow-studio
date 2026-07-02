@@ -5,7 +5,7 @@ import { FaPlus, FaMinus, FaSearch } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const Accordion = ({ theme, textAlign, fontSize, items }) => {
-  const { backgroundColor, fontColor, boldColor } = blockThemes[theme] || blockThemes.default
+  const { backgroundColor } = blockThemes[theme] || blockThemes.default
 
   const [activeIndex, setActiveIndex] = useState(null)
   const [showModal, setShowModal] = useState(false)

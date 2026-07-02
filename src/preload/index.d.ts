@@ -1,4 +1,4 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+export {}
 
 type GenerateResult =
   | {
@@ -16,7 +16,6 @@ type BuildResult = { ok: true; finalZipPath: string } | { ok: false; error: stri
 
 declare global {
   interface Window {
-    electron: ElectronAPI
     api: {
       getAppLocale: () => Promise<string>
       pickDocx: () => Promise<string | null>

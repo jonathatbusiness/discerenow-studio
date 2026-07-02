@@ -50,8 +50,28 @@ function blockIcon(type: string): string {
   switch (type) {
     case 'paragraph':
       return '¶'
+    case 'heading':
+      return 'H'
+    case 'subheading':
+      return 'S'
+    case 'paragraphHeading':
+      return 'H¶'
+    case 'paragraphSubheading':
+      return 'S¶'
+    case 'columns':
+      return 'Ⅱ'
+    case 'table':
+      return '▦'
+    case 'numberedList':
+      return '1.'
+    case 'checkboxList':
+      return '☐'
+    case 'bulletList':
+      return '•'
     case 'imgText':
       return 'IT'
+    case 'imageCentered':
+      return 'Im'
     case 'accordion':
       return 'A'
     case 'tabs':
@@ -62,6 +82,8 @@ function blockIcon(type: string): string {
       return '▶'
     case 'cards':
       return 'Cd'
+    case 'process':
+      return 'Ps'
     case 'flipcard':
       return 'Fc'
     case 'quiz':
@@ -79,8 +101,28 @@ function blockLabel(b: TreeBlock, t: Record<string, string>): string {
       const c = (b.content as string[]) || []
       return `${t.blockParagraph}: "${(c[0] || '').slice(0, 50)}..."`
     }
+    case 'heading':
+      return `${t.blockHeading}: "${((b.text as string) || '').slice(0, 50)}"`
+    case 'subheading':
+      return `${t.blockSubheading}: "${((b.text as string) || '').slice(0, 50)}"`
+    case 'paragraphHeading':
+      return `${t.blockParagraphHeading}: "${((b.lead as string) || '').slice(0, 40)}"`
+    case 'paragraphSubheading':
+      return `${t.blockParagraphSubheading}: "${((b.lead as string) || '').slice(0, 40)}"`
+    case 'columns':
+      return `${t.blockColumns}: ${((b.columns as unknown[]) || []).length}`
+    case 'table':
+      return `${t.blockTable}: ${((b.rows as unknown[]) || []).length} ${t.rows}`
+    case 'numberedList':
+      return `${t.blockNumberedList}: ${((b.items as unknown[]) || []).length} ${t.items}`
+    case 'checkboxList':
+      return `${t.blockCheckboxList}: ${((b.items as unknown[]) || []).length} ${t.items}`
+    case 'bulletList':
+      return `${t.blockBulletList}: ${((b.items as unknown[]) || []).length} ${t.items}`
     case 'imgText':
       return t.blockImageText
+    case 'imageCentered':
+      return `${t.blockImageCentered}${b.caption ? `: "${(b.caption as string).slice(0, 40)}"` : ''}`
     case 'accordion':
       return `${t.blockAccordion}: ${((b.items as unknown[]) || []).length} ${t.items}`
     case 'tabs':
@@ -91,6 +133,8 @@ function blockLabel(b: TreeBlock, t: Record<string, string>): string {
       return t.blockVideo
     case 'cards':
       return `${t.blockCards}: ${((b.items as unknown[]) || []).length} ${t.cards}`
+    case 'process':
+      return `${t.blockProcess}: ${((b.items as unknown[]) || []).length} ${t.steps}`
     case 'flipcard':
       return `${t.blockFlipCard}: ${((b.items as unknown[]) || []).length} ${t.cards}`
     case 'quiz':

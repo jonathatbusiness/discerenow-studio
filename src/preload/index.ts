@@ -1,4 +1,3 @@
-import { electronAPI } from '@electron-toolkit/preload'
 import { contextBridge, ipcRenderer } from 'electron'
 
 export type GenerateResult =
@@ -46,14 +45,11 @@ const api = {
 
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
     console.error(error)
   }
 } else {
-  // @ts-ignore (dev only)
-  window.electron = electronAPI
   // @ts-ignore (dev only)
   window.api = api
 }

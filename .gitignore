@@ -13,6 +13,7 @@ dist/
 dist-electron/
 .vite/
 *.local
+.eslintcache
 
 # IDEs
 .vscode/*

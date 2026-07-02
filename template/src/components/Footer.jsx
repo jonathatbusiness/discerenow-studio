@@ -1,12 +1,13 @@
-import React from "react";
-import "./Footer.css";
+import './Footer.css'
 
-const Footer = ({ className = "" }) => {
+const Footer = ({ className = '' }) => {
+  const currentYear = new Date().getFullYear()
+
   return (
     <footer className={`main-footer ${className}`}>
-      <p>2025, DiscereNow. Desenvolvido por Jonatha Teixeira.</p>
+      <p>{currentYear}, DiscereNow. Desenvolvido por Jonatha Teixeira.</p>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

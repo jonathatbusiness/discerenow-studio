@@ -1,8 +1,8 @@
 import { spawn } from 'child_process'
 import { existsSync } from 'fs'
-import { copyFile, readdir, readFile, stat, writeFile } from 'fs/promises'
+import { copyFile, readdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import JSZip from 'jszip'
-import { join, relative } from 'path'
+import { isAbsolute, join, relative, resolve } from 'path'
 import type { CourseMetadataInput } from '../parser/lessonWriter'
 
 export type RunnerLog = (line: string) => void
@@ -178,6 +178,77 @@ async function zipDirectory(srcDir: string, destZipPath: string, onLog: RunnerLo
   onLog(`✓ Versão web zipada em: ${destZipPath}`)
 }
 
+// ───────── Post-export cleanup ─────────
+
+function isSameOrWithin(parentPath: string, candidatePath: string): boolean {
+  const rel = relative(resolve(parentPath), resolve(candidatePath))
+  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel))
+}
+
+async function cleanupGeneratedArtifacts(
+  templateRoot: string,
+  courseId: string,
+  protectedPath: string,
+  onLog: RunnerLog
+): Promise<void> {
+  if (!/^[a-z0-9][a-z0-9_-]*$/i.test(courseId)) {
+    throw new Error(`Invalid course ID for cleanup: ${courseId}`)
+  }
+
+  const root = resolve(templateRoot)
+  const chaptersDir = join(root, 'src', 'content', 'chapters')
+  const publicImgDir = join(root, 'public', 'img')
+  const targets = [
+    join(root, 'dist'),
+    join(root, 'SCORM'),
+    join(root, 'temp_scorm_build'),
+    join(root, 'src', 'content', 'courseData.js'),
+    join(publicImgDir, courseId)
+  ]
+
+  if (existsSync(chaptersDir)) {
+    const chapterEntries = await readdir(chaptersDir, { withFileTypes: true })
+    for (const entry of chapterEntries) {
+      if (entry.isDirectory() && entry.name.startsWith('cap_')) {
+        targets.push(join(chaptersDir, entry.name))
+      }
+    }
+  }
+
+  for (const target of targets) {
+    if (!isSameOrWithin(root, target) || resolve(target) === root) {
+      throw new Error(`Refusing to clean path outside the template: ${target}`)
+    }
+
+    if (isSameOrWithin(target, protectedPath)) {
+      onLog(`⚠ Skipping cleanup for output location: ${target}`)
+      continue
+    }
+
+    await rm(target, { recursive: true, force: true })
+  }
+
+  if (existsSync(publicImgDir) && (await readdir(publicImgDir)).length === 0) {
+    await rm(publicImgDir, { recursive: true, force: true })
+  }
+
+  onLog('✓ Temporary course files removed')
+}
+
+async function tryCleanupGeneratedArtifacts(
+  templateRoot: string,
+  courseId: string,
+  protectedPath: string,
+  onLog: RunnerLog
+): Promise<void> {
+  try {
+    await cleanupGeneratedArtifacts(templateRoot, courseId, protectedPath, onLog)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    onLog(`⚠ Export succeeded, but temporary files could not be fully removed: ${message}`)
+  }
+}
+
 // ───────── Public APIs ─────────
 
 export type RunResult = {
@@ -189,7 +260,7 @@ export type RunResult = {
 export async function buildAndExportScorm(
   templateRoot: string,
   destZipPath: string,
-  _metadata: CourseMetadataInput,
+  metadata: CourseMetadataInput,
   onLog: RunnerLog
 ): Promise<RunResult> {
   try {
@@ -204,6 +275,8 @@ export async function buildAndExportScorm(
     onLog('▶ Copiando pacote para o destino escolhido...')
     await copyFile(generatedZip, destZipPath)
     onLog(`✓ SCORM salvo em: ${destZipPath}`)
+
+    await tryCleanupGeneratedArtifacts(templateRoot, metadata.courseId, destZipPath, onLog)
 
     return { ok: true, finalZipPath: destZipPath }
   } catch (err) {
@@ -231,6 +304,7 @@ export async function buildAndExportWeb(
 
     await injectSeoMetaTags(join(distDir, 'index.html'), metadata, onLog)
     await zipDirectory(distDir, destZipPath, onLog)
+    await tryCleanupGeneratedArtifacts(templateRoot, metadata.courseId, destZipPath, onLog)
     return { ok: true, finalZipPath: destZipPath }
   } catch (err) {
     return {

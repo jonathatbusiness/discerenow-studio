@@ -23,12 +23,19 @@ Word + DiscereNow Add-in → structured DOCX → DiscereNow Studio → Web or SC
 ## Supported learning blocks
 
 - Paragraphs
+- Headings and subheadings
+- Paragraphs with headings or subheadings
+- Responsive text columns
+- Theme-aware tables
+- Numbered, checkbox, and bullet lists
 - Image and text
+- Centered images with optional captions
 - Videos
 - Callouts
 - Accordions
 - Tabs
 - Cards
+- Process carousels with optional images
 - Flip cards
 - Single-answer and multiple-answer quizzes
 - Continue buttons for progressive reveal and lesson navigation

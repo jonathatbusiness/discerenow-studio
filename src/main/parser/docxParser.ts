@@ -16,6 +16,52 @@ export type ParagraphBlock = {
   content: string[]
 }
 
+export type TextHeadingBlock = {
+  blockType: 'heading' | 'subheading'
+  theme: string
+  textAlign: string
+  fontSize: string
+  text: string
+}
+
+export type ParagraphWithLeadBlock = {
+  blockType: 'paragraphHeading' | 'paragraphSubheading'
+  theme: string
+  textAlign: string
+  fontSize: string
+  leadFontSize: string
+  lead: string
+  content: string[]
+}
+
+export type ColumnsBlock = {
+  blockType: 'columns'
+  theme: string
+  textAlign: string
+  fontSize: string
+  columns: Array<{ content: string[]; fontSize: string }>
+}
+
+export type TableBlock = {
+  blockType: 'table'
+  theme: string
+  textAlign: string
+  fontSize: string
+  rows: string[][]
+}
+
+export type ListItem = {
+  text: string
+  fontSize: string
+}
+
+export type ListBlock = {
+  blockType: 'numberedList' | 'checkboxList' | 'bulletList'
+  theme: string
+  textAlign: string
+  items: ListItem[]
+}
+
 export type ImgTextBlock = {
   blockType: 'imgText'
   theme: string
@@ -28,6 +74,32 @@ export type ImgTextBlock = {
   fontSize: string
   content: string[]
   _embedRId?: string
+}
+
+export type ImageCenteredBlock = {
+  blockType: 'imageCentered'
+  theme: string
+  image: string
+  altText: string
+  caption: string
+  _embedRId?: string
+}
+
+export type ProcessStep = {
+  step: string
+  title: string
+  text: string
+  fontSize: string
+  image: string
+  altText: string
+  _embedRId?: string
+}
+
+export type ProcessBlock = {
+  blockType: 'process'
+  theme: string
+  textAlign: string
+  items: ProcessStep[]
 }
 
 export type AccordionItem = {
@@ -138,6 +210,13 @@ export type ContinueButtonBlock = {
 
 export type Block =
   | ParagraphBlock
+  | TextHeadingBlock
+  | ParagraphWithLeadBlock
+  | ColumnsBlock
+  | TableBlock
+  | ListBlock
+  | ImageCenteredBlock
+  | ProcessBlock
   | ImgTextBlock
   | AccordionBlock
   | TabsBlock
@@ -476,6 +555,11 @@ function collectParagraphs(body: XmlNode, fontSizes: FontSizeContext): ParaInfo[
 
 const DEFAULTS = {
   paragraph: { theme: 'default', textAlign: 'justify', fontSize: '16px' },
+  heading: { theme: 'default', textAlign: 'left', fontSize: '24pt' },
+  subheading: { theme: 'default', textAlign: 'left', fontSize: '18pt' },
+  columns: { theme: 'default', textAlign: 'left', fontSize: '12pt' },
+  table: { theme: 'default', textAlign: 'left', fontSize: '12pt' },
+  list: { theme: 'default', textAlign: 'left', fontSize: '12pt' },
   imgText: { theme: 'default', imageSide: 'left', zoom: 'no', textAlign: 'left', fontSize: '16px' },
   accordion: { theme: 'default', textAlign: 'justify', fontSize: '16px' },
   tabs: { theme: 'default', textAlign: 'left', fontSize: '15px' },
@@ -490,6 +574,32 @@ const DEFAULTS = {
 
 type CompoundState =
   | {
+      type: 'paragraphHeading' | 'paragraphSubheading'
+      tag: string
+      lead: string
+      leadFontSize?: string
+      fontSize?: string
+      content: string[]
+    }
+  | {
+      type: 'columns'
+      tag: string
+      cells: Map<number, { content: string[]; fontSize?: string }>
+    }
+  | {
+      type: 'table'
+      tag: string
+      cells: Map<string, string[]>
+      maxRow: number
+      maxCol: number
+      fontSize?: string
+    }
+  | {
+      type: 'numberedList' | 'checkboxList' | 'bulletList'
+      tag: string
+      items: Map<number, { text: string[]; fontSize?: string }>
+    }
+  | {
       type: 'accordion' | 'tabs'
       tag: string
       fontSize?: string
@@ -501,6 +611,18 @@ type CompoundState =
       tag: string
       fontSize?: string
       buffer: { text: string[]; embed?: string }
+    }
+  | {
+      type: 'imageCentered'
+      tag: string
+      embed?: string
+      caption: string[]
+    }
+  | {
+      type: 'process'
+      tag: string
+      items: ProcessStep[]
+      currentItem?: ProcessStep
     }
   | {
       type: 'callout'
@@ -612,7 +734,53 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       return
     }
     const c = openCompound
-    if (c.type === 'accordion') {
+    if (c.type === 'paragraphHeading' || c.type === 'paragraphSubheading') {
+      const isHeading = c.type === 'paragraphHeading'
+      currentLesson.blocks.push({
+        blockType: c.type,
+        theme: 'default',
+        textAlign: 'left',
+        fontSize: c.fontSize || DEFAULTS.paragraph.fontSize,
+        leadFontSize:
+          c.leadFontSize || (isHeading ? DEFAULTS.heading.fontSize : DEFAULTS.subheading.fontSize),
+        lead: c.lead,
+        content: c.content
+      })
+    } else if (c.type === 'columns') {
+      const columns = [...c.cells.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([, cell]) => ({
+          content: cell.content,
+          fontSize: cell.fontSize || DEFAULTS.columns.fontSize
+        }))
+      currentLesson.blocks.push({ blockType: 'columns', ...DEFAULTS.columns, columns })
+    } else if (c.type === 'table') {
+      const rows = Array.from({ length: c.maxRow + 1 }, (_, row) =>
+        Array.from({ length: c.maxCol + 1 }, (_, col) =>
+          (c.cells.get(`${row}:${col}`) || []).filter(Boolean).join(' ')
+        )
+      )
+      currentLesson.blocks.push({
+        blockType: 'table',
+        ...DEFAULTS.table,
+        fontSize: c.fontSize || DEFAULTS.table.fontSize,
+        rows
+      })
+    } else if (c.type === 'numberedList' || c.type === 'checkboxList' || c.type === 'bulletList') {
+      const items = [...c.items.entries()]
+        .sort(([a], [b]) => a - b)
+        .map(([, item]) => ({
+          text: item.text.filter(Boolean).join(' '),
+          fontSize: item.fontSize || DEFAULTS.list.fontSize
+        }))
+        .filter((item) => item.text)
+      currentLesson.blocks.push({
+        blockType: c.type,
+        theme: DEFAULTS.list.theme,
+        textAlign: DEFAULTS.list.textAlign,
+        items
+      })
+    } else if (c.type === 'accordion') {
       if (hasAccordionLikeItemData(c.currentItem)) c.items.push(c.currentItem)
       const items = c.items.filter(hasAccordionLikeItemData)
       currentLesson.blocks.push({
@@ -640,6 +808,26 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         imgSubtitle: '',
         content: c.buffer.text,
         _embedRId: c.buffer.embed
+      })
+    } else if (c.type === 'imageCentered') {
+      currentLesson.blocks.push({
+        blockType: 'imageCentered',
+        theme: 'default',
+        image: '',
+        altText: '',
+        caption: c.caption.filter(Boolean).join(' '),
+        _embedRId: c.embed
+      })
+    } else if (c.type === 'process') {
+      if (c.currentItem) c.items.push(c.currentItem)
+      const items = c.items.filter(
+        (item) => item.step || item.title || item.text || item._embedRId || item.image
+      )
+      currentLesson.blocks.push({
+        blockType: 'process',
+        theme: 'default',
+        textAlign: 'left',
+        items
       })
     } else if (c.type === 'callout') {
       currentLesson.blocks.push({
@@ -722,6 +910,15 @@ function buildTree(paras: ParaInfo[]): CourseTree {
     backAltText: ''
   })
 
+  const newProcessStep = (): ProcessStep => ({
+    step: '',
+    title: '',
+    text: '',
+    fontSize: '12pt',
+    image: '',
+    altText: ''
+  })
+
   for (const para of paras) {
     const outerTag = para.sdtTags[0] || null
 
@@ -754,6 +951,155 @@ function buildTree(paras: ParaInfo[]): CourseTree {
     }
 
     if (!currentLesson) continue
+
+    // ── Text blocks ──
+    if (outerTag === 'DN-heading' || outerTag === 'DN-subheading') {
+      if (openCompound) closeCompound()
+      if (para.text) {
+        const isHeading = outerTag === 'DN-heading'
+        currentLesson.blocks.push({
+          blockType: isHeading ? 'heading' : 'subheading',
+          ...(isHeading ? DEFAULTS.heading : DEFAULTS.subheading),
+          fontSize:
+            para.fontSize || (isHeading ? DEFAULTS.heading.fontSize : DEFAULTS.subheading.fontSize),
+          text: para.text
+        })
+      }
+      continue
+    }
+
+    if (outerTag === 'DN-paragraphHeading' || outerTag === 'DN-paragraphSubheading') {
+      const expectedType =
+        outerTag === 'DN-paragraphHeading' ? 'paragraphHeading' : 'paragraphSubheading'
+      if (openCompound && openCompound.tag !== outerTag) closeCompound()
+      if (!openCompound) {
+        openCompound = { type: expectedType, tag: outerTag, lead: '', content: [] }
+      }
+      const c = openCompound as Extract<
+        CompoundState,
+        { type: 'paragraphHeading' | 'paragraphSubheading' }
+      >
+      const isLead =
+        para.styleId === 'DN-Heading' ||
+        para.styleId === 'DN-Subheading' ||
+        (!c.lead && c.content.length === 0)
+      if (isLead && para.text) {
+        c.lead = para.text
+        c.leadFontSize = para.fontSize
+      } else if (para.text) {
+        c.content.push(para.text)
+        if (!c.fontSize && para.fontSize) c.fontSize = para.fontSize
+      }
+      continue
+    }
+
+    if (outerTag === 'DN-columns') {
+      if (openCompound && openCompound.tag !== outerTag) closeCompound()
+      if (!openCompound) openCompound = { type: 'columns', tag: outerTag, cells: new Map() }
+      const c = openCompound as Extract<CompoundState, { type: 'columns' }>
+      if (para.inTable && para.tableCell) {
+        const col = para.tableCell.col
+        const cell = c.cells.get(col) || { content: [] }
+        if (para.text) cell.content.push(para.text)
+        if (!cell.fontSize && para.fontSize) cell.fontSize = para.fontSize
+        c.cells.set(col, cell)
+      }
+      continue
+    }
+
+    if (outerTag === 'DN-table') {
+      if (openCompound && openCompound.tag !== outerTag) closeCompound()
+      if (!openCompound) {
+        openCompound = { type: 'table', tag: outerTag, cells: new Map(), maxRow: -1, maxCol: -1 }
+      }
+      const c = openCompound as Extract<CompoundState, { type: 'table' }>
+      if (para.inTable && para.tableCell) {
+        const { row, col } = para.tableCell
+        const key = `${row}:${col}`
+        const values = c.cells.get(key) || []
+        if (para.text) values.push(para.text)
+        c.cells.set(key, values)
+        c.maxRow = Math.max(c.maxRow, row)
+        c.maxCol = Math.max(c.maxCol, col)
+        if (!c.fontSize && row > 0 && para.fontSize) c.fontSize = para.fontSize
+      }
+      continue
+    }
+
+    if (
+      outerTag === 'DN-numberedList' ||
+      outerTag === 'DN-checkboxList' ||
+      outerTag === 'DN-bulletList'
+    ) {
+      const expectedType =
+        outerTag === 'DN-numberedList'
+          ? 'numberedList'
+          : outerTag === 'DN-checkboxList'
+            ? 'checkboxList'
+            : 'bulletList'
+      if (openCompound && openCompound.tag !== outerTag) closeCompound()
+      if (!openCompound) openCompound = { type: expectedType, tag: outerTag, items: new Map() }
+      const c = openCompound as Extract<
+        CompoundState,
+        { type: 'numberedList' | 'checkboxList' | 'bulletList' }
+      >
+      if (para.inTable && para.tableCell) {
+        const row = para.tableCell.row
+        const item = c.items.get(row) || { text: [] }
+        if (para.text) item.text.push(para.text)
+        if (!item.fontSize && para.fontSize) item.fontSize = para.fontSize
+        c.items.set(row, item)
+      }
+      continue
+    }
+
+    if (outerTag === 'DN-imageCentered') {
+      if (openCompound && openCompound.tag !== outerTag) closeCompound()
+      if (!openCompound) {
+        openCompound = { type: 'imageCentered', tag: outerTag, caption: [] }
+      }
+      const c = openCompound as Extract<CompoundState, { type: 'imageCentered' }>
+      if (para.inTable && para.tableCell?.row === 0 && para.imageEmbeds[0]) {
+        c.embed = para.imageEmbeds[0]
+      }
+      if (para.inTable && para.tableCell?.row === 1 && para.text) {
+        const normalized = para.text.trim().toLowerCase()
+        const isPlaceholder =
+          normalized === 'legenda da imagem (opcional)' || normalized === 'image caption (optional)'
+        if (!isPlaceholder) c.caption.push(para.text)
+      }
+      continue
+    }
+
+    if (outerTag === 'DN-process') {
+      if (openCompound && openCompound.tag !== outerTag) closeCompound()
+      if (!openCompound) {
+        openCompound = { type: 'process', tag: outerTag, items: [], currentItem: undefined }
+      }
+      const c = openCompound as Extract<CompoundState, { type: 'process' }>
+
+      if (para.styleId === 'DN-Process-Passo') {
+        if (c.currentItem) c.items.push(c.currentItem)
+        c.currentItem = newProcessStep()
+        c.currentItem.step = para.text
+      } else if (para.styleId === 'DN-Process-Titulo') {
+        if (!c.currentItem) c.currentItem = newProcessStep()
+        const normalized = para.text.trim().toLowerCase()
+        const isPlaceholder =
+          normalized === 'título do passo (opcional)' || normalized === 'step title (optional)'
+        if (!isPlaceholder) c.currentItem.title = para.text
+      } else if (para.styleId === 'DN-Process-Texto') {
+        if (!c.currentItem) c.currentItem = newProcessStep()
+        if (para.text) {
+          c.currentItem.text = [c.currentItem.text, para.text].filter(Boolean).join(' ')
+        }
+        if (para.fontSize) c.currentItem.fontSize = para.fontSize
+      } else if (para.inTable && para.tableCell?.row === 2 && para.imageEmbeds[0]) {
+        if (!c.currentItem) c.currentItem = newProcessStep()
+        c.currentItem._embedRId = para.imageEmbeds[0]
+      }
+      continue
+    }
 
     // ── Accordion / Tabs ──
     if (outerTag === 'DN-accordion' || outerTag === 'DN-tabs') {

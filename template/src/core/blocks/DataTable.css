@@ -1,0 +1,39 @@
+.block-data-table {
+  width: 100%;
+  padding: 30px 0;
+}
+
+.block-data-table__scroll {
+  width: 60%;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+.block-data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.block-data-table th,
+.block-data-table td {
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  vertical-align: top;
+}
+
+.block-data-table th {
+  color: #fff;
+  font-weight: 700;
+}
+
+.block-data-table td {
+  background: #fff;
+  color: #374151;
+}
+
+@media screen and (max-width: 768px) {
+  .block-data-table__scroll {
+    width: 90%;
+  }
+}

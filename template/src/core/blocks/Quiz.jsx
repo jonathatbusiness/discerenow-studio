@@ -19,8 +19,7 @@ const Quiz = ({
   feedbackCorrect,
   feedbackIncorrect
 }) => {
-  const { backgroundColor, fontColor, boldColor, buttonColor } =
-    blockThemes[theme] || blockThemes.default
+  const { backgroundColor, buttonColor } = blockThemes[theme] || blockThemes.default
 
   const [selected, setSelected] = useState([])
   const [submitted, setSubmitted] = useState(false)

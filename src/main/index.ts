@@ -45,8 +45,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  ipcMain.on('ping', () => console.log('pong'))
-
   ipcMain.handle('app:getLocale', async () => {
     return app.getLocale()
   })
