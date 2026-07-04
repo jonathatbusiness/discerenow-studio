@@ -1,6 +1,8 @@
 .block-process {
+  position: relative;
   width: 100%;
   padding: 36px 20px 28px;
+  box-sizing: border-box;
 }
 
 .block-process__stage {
@@ -150,8 +152,13 @@
 }
 
 @media screen and (max-width: 768px) {
+  .block-process {
+    padding: 32px 20px 24px;
+  }
+
   .block-process__stage {
-    width: calc(100% - 56px);
+    position: static;
+    width: 100%;
   }
 
   .block-process__card {
@@ -163,10 +170,28 @@
   }
 
   .block-process__arrow--previous {
-    left: -44px;
+    bottom: 32px;
+    left: 20px;
   }
 
   .block-process__arrow--next {
-    right: -44px;
+    right: 20px;
+    bottom: 32px;
+  }
+
+  .block-process__arrow {
+    top: auto;
+    transform: none;
+  }
+
+  .block-process__arrow:not(:disabled):hover {
+    transform: scale(1.07);
+  }
+
+  .block-process__navigation {
+    min-height: 34px;
+    flex-direction: column;
+    gap: 7px;
+    margin: 16px 44px 0;
   }
 }

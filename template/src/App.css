@@ -1,4 +1,6 @@
 #root {
+  --dn-reading-width: 920px;
+  --dn-wide-content-width: 1200px;
   width: 100%;
   margin: 0 auto;
   

@@ -4,8 +4,10 @@
 
 .block-learning-list__items {
   width: 60%;
+  max-width: var(--dn-reading-width);
   margin: 0 auto;
   padding: 34px 20px;
+  box-sizing: border-box;
 }
 
 .block-learning-list__item {

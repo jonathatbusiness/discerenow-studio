@@ -1,4 +1,5 @@
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Video.css'
 
 const Video = ({ theme, link, videoSubtitle, textAlign, fontSize }) => {
@@ -61,8 +62,10 @@ const Video = ({ theme, link, videoSubtitle, textAlign, fontSize }) => {
         </div>
 
         {videoSubtitle && (
-          <div
+          <RichText
+            as="div"
             className="video-subtitle"
+            html={videoSubtitle}
             style={{
               textAlign,
               fontSize: fontSize
@@ -73,9 +76,7 @@ const Video = ({ theme, link, videoSubtitle, textAlign, fontSize }) => {
               marginTop: '8px',
               color: fontColor
             }}
-          >
-            {videoSubtitle}
-          </div>
+          />
         )}
       </div>
     </div>

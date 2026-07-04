@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Accordion.css'
 import { FaPlus, FaMinus, FaSearch } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -38,7 +39,7 @@ const Accordion = ({ theme, textAlign, fontSize, items }) => {
                   textAlign
                 }}
               >
-                <span>{item.title}</span>
+                <RichText html={item.title} />
                 {activeIndex === index ? <FaMinus /> : <FaPlus />}
               </div>
 
@@ -52,9 +53,7 @@ const Accordion = ({ theme, textAlign, fontSize, items }) => {
                     transition={{ duration: 0.4, ease: 'easeInOut' }}
                   >
                     {item.content.map((text, i) => (
-                      <p style={{ textAlign, fontSize }} key={i}>
-                        {text}
-                      </p>
+                      <RichText as="p" html={text} style={{ textAlign, fontSize }} key={i} />
                     ))}
 
                     {item.img && (

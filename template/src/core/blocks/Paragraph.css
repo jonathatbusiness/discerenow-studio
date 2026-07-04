@@ -4,13 +4,20 @@
 .block-paragraph {
   padding: 30px 20px;
   width: 60%;
+  max-width: var(--dn-reading-width);
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 @media screen and (max-width: 768px) {
   .block-paragraph {
     padding: 30px 20px;
-    width: 90%;
+    width: 100%;
     margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .block-paragraph p {
+    text-align: left !important;
   }
 }

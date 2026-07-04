@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './FlipCard.css'
 
 const FlipCard = ({ theme, textAlign, fontSize, items }) => {
@@ -32,8 +33,12 @@ const FlipCard = ({ theme, textAlign, fontSize, items }) => {
                       </div>
                     ) : (
                       <>
-                        {item.title && <h4 style={{ fontSize, textAlign }}>{item.title}</h4>}
-                        {item.content && <p style={{ fontSize, textAlign }}>{item.content}</p>}
+                        {item.title && (
+                          <RichText as="h4" html={item.title} style={{ fontSize, textAlign }} />
+                        )}
+                        {item.content && (
+                          <RichText as="p" html={item.content} style={{ fontSize, textAlign }} />
+                        )}
                       </>
                     )}
                   </div>
@@ -46,10 +51,14 @@ const FlipCard = ({ theme, textAlign, fontSize, items }) => {
                     ) : (
                       <>
                         {item.backTitle && (
-                          <h4 style={{ fontSize, textAlign }}>{item.backTitle}</h4>
+                          <RichText as="h4" html={item.backTitle} style={{ fontSize, textAlign }} />
                         )}
                         {item.backContent && (
-                          <p style={{ fontSize, textAlign }}>{item.backContent}</p>
+                          <RichText
+                            as="p"
+                            html={item.backContent}
+                            style={{ fontSize, textAlign }}
+                          />
                         )}
                       </>
                     )}

@@ -10,6 +10,12 @@ Turn structured Microsoft Word documents into web-ready and SCORM-ready digital 
 
 </div>
 
+## Documentation
+
+- [User Manual](USER-MANUAL.md)
+- [Manual do usuário — Português (Brasil)](USER-MANUAL.pt-BR.md)
+- [Development Documentation](DEVELOPMENT.md)
+
 ## Overview
 
 DiscereNow Studio is a desktop course-production application built with Electron, React, and TypeScript. It uses Microsoft Word as the visual authoring environment, allowing instructional designers to work in a familiar tool instead of learning a proprietary editor.

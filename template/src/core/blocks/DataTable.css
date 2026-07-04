@@ -1,12 +1,23 @@
 .block-data-table {
   width: 100%;
   padding: 30px 0;
+  box-sizing: border-box;
+}
+
+.block-data-table__viewport {
+  position: relative;
+  width: 60%;
+  max-width: var(--dn-wide-content-width);
+  margin: 0 auto;
 }
 
 .block-data-table__scroll {
-  width: 60%;
-  margin: 0 auto;
+  width: 100%;
   overflow-x: auto;
+}
+
+.block-data-table__more {
+  display: none;
 }
 
 .block-data-table table {
@@ -33,7 +44,85 @@
 }
 
 @media screen and (max-width: 768px) {
+  .block-data-table {
+    padding: 30px 20px;
+  }
+
+  .block-data-table__viewport {
+    width: 100%;
+  }
+
   .block-data-table__scroll {
-    width: 90%;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(55, 65, 81, 0.55) rgba(255, 255, 255, 0.18);
+  }
+
+  .block-data-table table {
+    width: max(100%, calc(var(--table-columns) * 180px));
+    table-layout: fixed;
+  }
+
+  .block-data-table th,
+  .block-data-table td {
+    min-width: 0;
+    max-width: 180px;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .block-data-table__scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .block-data-table__scroll::-webkit-scrollbar-thumb {
+    background: rgba(55, 65, 81, 0.55);
+    border-radius: 999px;
+  }
+
+  .block-data-table__scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .block-data-table__more {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 8px;
+    display: flex;
+    width: 76px;
+    padding-right: 8px;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    box-sizing: border-box;
+    color: #fff;
+    background: linear-gradient(to right, rgba(15, 23, 42, 0), rgba(15, 23, 42, 0.88) 68%);
+    font-size: 0.7rem;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  .block-data-table__more-arrow {
+    font-size: 1.45rem;
+    line-height: 1;
+    animation: table-more-right 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes table-more-right {
+  0%,
+  100% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-data-table__more-arrow {
+    animation: none;
   }
 }

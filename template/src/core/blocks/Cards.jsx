@@ -1,24 +1,24 @@
-import { useState } from "react";
-import blockThemes from "../../theme/blockThemes";
-import "./Cards.css";
-import { FaSearch } from "react-icons/fa";
+import { useState } from 'react'
+import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
+import './Cards.css'
+import { FaSearch } from 'react-icons/fa'
 
 const Cards = ({ theme, textAlign, fontSize, items }) => {
-  const { backgroundColor, boldColor } =
-    blockThemes[theme] || blockThemes.default;
+  const { backgroundColor, boldColor } = blockThemes[theme] || blockThemes.default
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalImage, setModalImage] = useState("");
+  const [showModal, setShowModal] = useState(false)
+  const [modalImage, setModalImage] = useState('')
 
   const handleZoom = (img) => {
-    setModalImage(img);
-    setShowModal(true);
-  };
+    setModalImage(img)
+    setShowModal(true)
+  }
 
   const closeModal = () => {
-    setShowModal(false);
-    setModalImage("");
-  };
+    setShowModal(false)
+    setModalImage('')
+  }
 
   return (
     <>
@@ -30,15 +30,13 @@ const Cards = ({ theme, textAlign, fontSize, items }) => {
                 <div
                   className="card-image"
                   style={{
-                    cursor: item.zoom === "yes" ? "zoom-in" : "default",
-                    position: "relative",
+                    cursor: item.zoom === 'yes' ? 'zoom-in' : 'default',
+                    position: 'relative'
                   }}
-                  onClick={
-                    item.zoom === "yes" ? () => handleZoom(item.img) : undefined
-                  }
+                  onClick={item.zoom === 'yes' ? () => handleZoom(item.img) : undefined}
                 >
-                  <img src={item.img} alt={item.altText || ""} />
-                  {item.zoom === "yes" && (
+                  <img src={item.img} alt={item.altText || ''} />
+                  {item.zoom === 'yes' && (
                     <div className="overlay-icon">
                       <FaSearch />
                     </div>
@@ -47,17 +45,14 @@ const Cards = ({ theme, textAlign, fontSize, items }) => {
               )}
 
               {item.subtitle && (
-                <div
-                  className="card-subtitle"
-                  style={{ fontSize: "14px", textAlign }}
-                >
+                <div className="card-subtitle" style={{ fontSize: '14px', textAlign }}>
                   {item.subtitle}
                 </div>
               )}
 
               <div className="card-content" style={{ textAlign }}>
-                {item.title && <h4 style={{ fontSize }}>{item.title}</h4>}
-                {item.content && <p style={{ fontSize }}>{item.content}</p>}
+                {item.title && <RichText as="h4" html={item.title} style={{ fontSize }} />}
+                {item.content && <RichText as="p" html={item.content} style={{ fontSize }} />}
               </div>
             </div>
           ))}
@@ -70,7 +65,7 @@ const Cards = ({ theme, textAlign, fontSize, items }) => {
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default Cards;
+export default Cards

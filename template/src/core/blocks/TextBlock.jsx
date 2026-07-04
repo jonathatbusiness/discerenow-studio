@@ -1,4 +1,5 @@
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './TextBlock.css'
 
 const size = (value) => (typeof value === 'number' ? `${value}px` : value || undefined)
@@ -23,18 +24,21 @@ const TextBlock = ({
       style={{ backgroundColor: colors.backgroundColor, color: colors.fontColor }}
     >
       <div className="block-text__inner" style={{ textAlign }}>
-        <LeadTag
+        <RichText
+          as={LeadTag}
           className="block-text__lead"
+          html={standalone ? text : lead}
+          accentColor={colors.boldColor}
           style={{ color: colors.boldColor, fontSize: size(standalone ? fontSize : leadFontSize) }}
-        >
-          {standalone ? text : lead}
-        </LeadTag>
+        />
         {!standalone &&
           content.map((paragraph, index) => (
-            <p
+            <RichText
+              as="p"
               key={index}
+              html={paragraph}
+              accentColor={colors.boldColor}
               style={{ fontSize: size(fontSize) }}
-              dangerouslySetInnerHTML={{ __html: paragraph }}
             />
           ))}
       </div>

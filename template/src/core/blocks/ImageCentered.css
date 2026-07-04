@@ -2,10 +2,12 @@
   width: 100%;
   margin: 0;
   padding: 32px 20px;
+  box-sizing: border-box;
 }
 
 .block-image-centered__inner {
   width: 60%;
+  max-width: var(--dn-reading-width);
   margin: 0 auto;
   text-align: center;
 }
@@ -27,6 +29,6 @@
 
 @media screen and (max-width: 768px) {
   .block-image-centered__inner {
-    width: 90%;
+    width: 100%;
   }
 }

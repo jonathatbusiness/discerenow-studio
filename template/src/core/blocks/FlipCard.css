@@ -14,17 +14,17 @@
 
 .flipcard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 40px;
-  max-width: 700px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 360px));
+  gap: 24px;
+  max-width: 1200px;
   margin: 0 auto;
   justify-content: center;
 }
 
 .flipcard-item {
-  width: 90%;
-  max-width: 300px;
-  height: 300px;
+  width: 100%;
+  max-width: 360px;
+  height: 320px;
   perspective: 1000px;
   margin: 0 auto;
   cursor: pointer;
@@ -117,4 +117,25 @@
   object-position: center;
   margin: 0;
   border-radius: 12px;
+}
+
+@media screen and (max-width: 900px) {
+  .flipcard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 360px));
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .flipcard-block-container {
+    padding: 24px 16px;
+  }
+
+  .flipcard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .flipcard-item {
+    max-width: 360px;
+    height: 300px;
+  }
 }

@@ -3,7 +3,7 @@ import Footer from '../components/Footer'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
 import courseData from '../content/courseData'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAlignLeft } from '@fortawesome/free-solid-svg-icons'
@@ -32,6 +32,7 @@ const totalLessons = importedChapters.reduce((sum, chap) => sum + chap.lessons.l
 console.log('📚 Total de lições esperadas:', totalLessons)
 
 const Lesson = () => {
+  const shouldReduceMotion = useReducedMotion()
   const { chapterId, lessonId } = useParams()
   const [chapterContent, setChapterContent] = useState(null)
   const [currentLesson, setCurrentLesson] = useState(null)
@@ -518,6 +519,7 @@ const Lesson = () => {
                         }}
                       >
                         <div
+                          className="lesson-nav-item__label"
                           style={{
                             display: 'flex',
                             alignItems: 'center'
@@ -527,7 +529,7 @@ const Lesson = () => {
                           {lesson.name}
                         </div>
 
-                        <div style={{ width: 30, height: 30 }}>
+                        <div className="lesson-nav-item__progress">
                           {Number.isFinite(percent) && (
                             <CircularProgressbar
                               value={percent}
@@ -558,12 +560,28 @@ const Lesson = () => {
             {currentLesson.blocks.map((block, index) =>
               unlockedBlocks.includes(index) ? (
                 <motion.div
-                  key={index}
+                  key={`${lessonKey}-${index}`}
                   id={`block-${index}`}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true, amount: 0.1 }}
-                  transition={{ duration: 0.6 }}
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 24, scale: 0.99 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{
+                    once: true,
+                    amount:
+                      block.blockType === 'continueButton' ||
+                      index >= currentLesson.blocks.length - 2
+                        ? 0.05
+                        : 0.2,
+                    margin:
+                      block.blockType === 'continueButton' ||
+                      index >= currentLesson.blocks.length - 2
+                        ? '0px'
+                        : '0px 0px -40% 0px'
+                  }}
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0 }
+                      : { duration: 0.75, ease: [0.22, 1, 0.36, 1] }
+                  }
                   onViewportEnter={() => onViewportEnter(index)}
                 >
                   {renderBlock(block, index)}

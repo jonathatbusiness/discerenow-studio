@@ -7,6 +7,7 @@
   max-width: 800px;
   margin: 0px auto;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .video-container {
@@ -29,4 +30,20 @@
   text-align: center;
   margin-top: 6px;
   color: #666;
+}
+
+@media screen and (max-width: 768px) {
+  .video-block-container {
+    padding: 20px 0;
+  }
+
+  .video-block {
+    padding: 20px;
+  }
+
+  .video-container,
+  .video-container iframe,
+  .video-container video {
+    border-radius: 8px;
+  }
 }

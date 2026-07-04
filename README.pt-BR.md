@@ -10,6 +10,12 @@ Transforme documentos estruturados do Microsoft Word em cursos digitais prontos 
 
 </div>
 
+## Documentação
+
+- [Manual do usuário — Português (Brasil)](USER-MANUAL.pt-BR.md)
+- [User Manual — English](USER-MANUAL.md)
+- [Documentação de desenvolvimento — English](DEVELOPMENT.md)
+
 ## Visão geral
 
 O DiscereNow Studio é uma aplicação desktop para produção de cursos, construída com Electron, React e TypeScript. Ele utiliza o Microsoft Word como ambiente visual de autoria, permitindo que Designers Instrucionais trabalhem em uma ferramenta conhecida em vez de aprenderem um editor proprietário.

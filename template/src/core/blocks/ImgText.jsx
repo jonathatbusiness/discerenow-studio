@@ -1,7 +1,8 @@
-import { useState } from "react";
-import blockThemes from "../../theme/blockThemes";
-import "./ImgText.css";
-import { FaSearch } from "react-icons/fa";
+import { useState } from 'react'
+import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
+import './ImgText.css'
+import { FaSearch } from 'react-icons/fa'
 
 const ImgText = ({
   content,
@@ -12,31 +13,25 @@ const ImgText = ({
   fontSize,
   zoom,
   altText,
-  imgSubtitle,
+  imgSubtitle
 }) => {
-  const { backgroundColor, fontColor, boldColor } =
-    blockThemes[theme] || blockThemes.default;
+  const { backgroundColor, fontColor, boldColor } = blockThemes[theme] || blockThemes.default
 
-  const [showModal, setShowModal] = useState(false);
-  const toggleModal = () => setShowModal(!showModal);
+  const [showModal, setShowModal] = useState(false)
+  const toggleModal = () => setShowModal(!showModal)
 
-  const shouldZoom = zoom === "yes";
+  const shouldZoom = zoom === 'yes'
 
   return (
     <>
-      <div
-        className="block-imgtext-container"
-        style={{ backgroundColor, color: fontColor }}
-      >
-        <div
-          className={`block-imgtext ${imageSide === "right" ? "reverse" : ""}`}
-        >
+      <div className="block-imgtext-container" style={{ backgroundColor, color: fontColor }}>
+        <div className={`block-imgtext ${imageSide === 'right' ? 'reverse' : ''}`}>
           <div
             className="img-wrapper"
             onClick={shouldZoom ? toggleModal : undefined}
-            style={{ cursor: shouldZoom ? "zoom-in" : "default" }}
+            style={{ cursor: shouldZoom ? 'zoom-in' : 'default' }}
           >
-            <img src={image} alt={altText || ""} />
+            <img src={image} alt={altText || ''} />
             {shouldZoom && (
               <div className="overlay-icon">
                 <FaSearch />
@@ -47,10 +42,10 @@ const ImgText = ({
               <div
                 className="img-subtitle"
                 style={{
-                  fontSize: "14px",
+                  fontSize: '14px',
                   color: fontColor,
-                  textAlign: "center",
-                  marginTop: "8px",
+                  textAlign: 'center',
+                  marginTop: '8px'
                 }}
               >
                 {imgSubtitle}
@@ -63,24 +58,14 @@ const ImgText = ({
             style={{
               textAlign,
               fontSize: fontSize
-                ? typeof fontSize === "number"
+                ? typeof fontSize === 'number'
                   ? `${fontSize}px`
                   : fontSize
-                : undefined,
+                : undefined
             }}
           >
             {content.map((t, i) => (
-              <p
-                key={i}
-                dangerouslySetInnerHTML={{
-                  __html: boldColor
-                    ? t.replace(
-                        /<b>(.*?)<\/b>/g,
-                        `<b style="color: ${boldColor}">$1</b>`
-                      )
-                    : t,
-                }}
-              />
+              <RichText as="p" key={i} html={t} accentColor={boldColor} />
             ))}
           </div>
         </div>
@@ -88,11 +73,11 @@ const ImgText = ({
 
       {shouldZoom && showModal && (
         <div className="img-modal" onClick={toggleModal}>
-          <img src={image} alt={altText || "Imagem ampliada"} />
+          <img src={image} alt={altText || 'Imagem ampliada'} />
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default ImgText;
+export default ImgText

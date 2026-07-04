@@ -1,4 +1,5 @@
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Columns.css'
 
 const Columns = ({ columns = [], theme, textAlign }) => {
@@ -13,10 +14,12 @@ const Columns = ({ columns = [], theme, textAlign }) => {
         {columns.map((column, index) => (
           <div className="block-columns__item" key={index} style={{ textAlign }}>
             {column.content.map((paragraph, paragraphIndex) => (
-              <p
+              <RichText
+                as="p"
                 key={paragraphIndex}
+                html={paragraph}
+                accentColor={colors.boldColor}
                 style={{ fontSize: column.fontSize }}
-                dangerouslySetInnerHTML={{ __html: paragraph }}
               />
             ))}
           </div>

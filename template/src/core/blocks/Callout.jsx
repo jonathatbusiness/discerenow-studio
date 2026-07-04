@@ -1,4 +1,5 @@
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Callout.css'
 import { motion } from 'framer-motion'
 
@@ -30,11 +31,11 @@ const Callout = ({ theme, textAlign, fontSize, icon, title, content }) => {
       >
         <div className="icon-title">
           <div className="icon">{icon !== 'none' && renderIcon()}</div>
-          <div className="title">{title && <h4>{title}</h4>}</div>
+          <div className="title">{title && <RichText as="h4" html={title} />}</div>
         </div>
 
         <div className="callout-content" style={{ textAlign }}>
-          <p style={{ fontSize }}>{content}</p>
+          <RichText as="p" html={content} style={{ fontSize }} />
         </div>
       </motion.div>
     </div>

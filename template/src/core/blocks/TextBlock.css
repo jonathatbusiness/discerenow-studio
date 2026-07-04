@@ -4,8 +4,10 @@
 
 .block-text__inner {
   width: 60%;
+  max-width: var(--dn-reading-width);
   margin: 0 auto;
   padding: 28px 20px;
+  box-sizing: border-box;
 }
 
 .block-text__lead {

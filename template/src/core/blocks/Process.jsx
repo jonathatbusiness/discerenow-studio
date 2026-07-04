@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Process.css'
 
 const contrastColor = (background) => {
@@ -72,16 +73,16 @@ const Process = ({ items = [], theme, textAlign }) => {
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
             {item.step ? (
-              <span
+              <RichText
+                as="span"
                 className="block-process__step"
+                html={item.step}
                 style={{ backgroundColor: colors.buttonColor, color: accentText }}
-              >
-                {item.step}
-              </span>
+              />
             ) : null}
-            {item.title ? <h3>{item.title}</h3> : null}
+            {item.title ? <RichText as="h3" html={item.title} /> : null}
             {item.image ? <img src={item.image} alt={item.altText || ''} /> : null}
-            <p style={{ textAlign, fontSize: item.fontSize }}>{item.text}</p>
+            <RichText as="p" html={item.text} style={{ textAlign, fontSize: item.fontSize }} />
           </motion.article>
         </AnimatePresence>
 

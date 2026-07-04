@@ -19,12 +19,14 @@
   display: none;
 }
 
-.lesson-container:not(.sidebar-hidden) + .main-footer {
-  width: calc(100% - 300px);
-  margin-left: 300px;
-}
+@media screen and (min-width: 1151px) {
+  .lesson-container:not(.sidebar-hidden) + .main-footer {
+    width: calc(100% - 300px);
+    margin-left: 300px;
+  }
 
-.lesson-container.sidebar-hidden + .main-footer {
-  width: 100%;
-  margin-left: 0;
+  .lesson-container.sidebar-hidden + .main-footer {
+    width: 100%;
+    margin-left: 0;
+  }
 }

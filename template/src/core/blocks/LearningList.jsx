@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './LearningList.css'
 
 const contrastColor = (background) => {
@@ -72,7 +73,7 @@ const LearningList = ({ blockType, items = [], theme, textAlign }) => {
                   {blockType === 'numberedList' ? index + 1 : '•'}
                 </span>
               )}
-              <p style={{ fontSize: item.fontSize }}>{item.text}</p>
+              <RichText as="p" html={item.text} style={{ fontSize: item.fontSize }} />
             </div>
           )
         })}

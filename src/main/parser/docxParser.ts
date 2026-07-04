@@ -102,9 +102,11 @@ export type ProcessBlock = {
   items: ProcessStep[]
 }
 
+export type InteractiveTextEntry = string | { type: 'bullet'; text: string }
+
 export type AccordionItem = {
   title: string
-  content: string[]
+  content: InteractiveTextEntry[]
   img: string
   altText: string
   subtitle: string
@@ -256,7 +258,9 @@ export type ParseResult = {
 type ParaInfo = {
   styleId: string | null
   text: string
+  richText: string
   fontSize?: string
+  isListItem: boolean
   sdtTags: string[]
   inTable: boolean
   tableCell?: { row: number; col: number }
@@ -390,12 +394,79 @@ function paragraphText(p: XmlNode): string {
   return parts.join('').trim()
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function wordPropertyEnabled(node: XmlNode | null): boolean {
+  if (!node) return false
+  const value = node.attrs['w:val'] || node.attrs.val
+  return value !== '0' && value !== 'false' && value !== 'off' && value !== 'none'
+}
+
+function paragraphRichText(p: XmlNode): string {
+  const parts: string[] = []
+
+  const runContent = (run: XmlNode): string => {
+    const content: string[] = []
+    const walk = (node: XmlNode): void => {
+      for (const child of node.children) {
+        if (child.name === '#text') continue
+        const name = localName(child.name)
+        if (name === 't') {
+          if (child.children[0]?.text) content.push(escapeHtml(child.children[0].text))
+        } else if (name === 'br') content.push('<br>')
+        else if (name === 'tab') content.push('&emsp;')
+        else if (name !== 'rPr') walk(child)
+      }
+    }
+    walk(run)
+    return content.join('')
+  }
+
+  const walk = (node: XmlNode): void => {
+    for (const child of node.children) {
+      if (child.name === '#text') continue
+      if (localName(child.name) === 'r') {
+        const rPr = findFirst(child, 'rPr')
+        let content = runContent(child)
+        if (!content) continue
+        if (wordPropertyEnabled(rPr ? findFirst(rPr, 'b') : null)) {
+          content = `<strong>${content}</strong>`
+        }
+        if (wordPropertyEnabled(rPr ? findFirst(rPr, 'i') : null)) {
+          content = `<em>${content}</em>`
+        }
+        if (wordPropertyEnabled(rPr ? findFirst(rPr, 'u') : null)) {
+          content = `<u>${content}</u>`
+        }
+        parts.push(content)
+      } else {
+        walk(child)
+      }
+    }
+  }
+
+  walk(p)
+  return parts.join('').trim()
+}
+
 function paragraphStyle(p: XmlNode): string | null {
   const pPr = findFirst(p, 'pPr')
   if (!pPr) return null
   const pStyle = findFirst(pPr, 'pStyle')
   if (!pStyle) return null
   return pStyle.attrs['w:val'] || pStyle.attrs.val || null
+}
+
+function paragraphIsListItem(p: XmlNode): boolean {
+  const pPr = findFirst(p, 'pPr')
+  return Boolean(pPr && findFirst(pPr, 'numPr'))
 }
 
 type FontSizeContext = {
@@ -516,13 +587,16 @@ function collectParagraphs(body: XmlNode, fontSizes: FontSizeContext): ParaInfo[
 
       if (ln === 'p') {
         const text = paragraphText(child)
+        const richText = paragraphRichText(child) || escapeHtml(text)
         const style = paragraphStyle(child)
         const fontSize = paragraphFontSize(child, style, fontSizes)
         const imageEmbeds = findDrawingEmbeds(child)
         const para: ParaInfo = {
           styleId: style,
           text,
+          richText,
           fontSize,
+          isListItem: paragraphIsListItem(child),
           sdtTags: [...sdtStack],
           inTable,
           tableCell,
@@ -685,7 +759,10 @@ function isNoImageMarker(text: string): boolean {
 function hasAccordionLikeItemData(item: AccordionItem | undefined): item is AccordionItem {
   if (!item) return false
   return Boolean(
-    item.title?.trim() || item.content?.some((text) => text.trim()) || item._embedRId || item.img
+    item.title?.trim() ||
+    item.content?.some((entry) => (typeof entry === 'string' ? entry : entry.text).trim()) ||
+    item._embedRId ||
+    item.img
   )
 }
 
@@ -962,7 +1039,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
           ...(isHeading ? DEFAULTS.heading : DEFAULTS.subheading),
           fontSize:
             para.fontSize || (isHeading ? DEFAULTS.heading.fontSize : DEFAULTS.subheading.fontSize),
-          text: para.text
+          text: para.richText
         })
       }
       continue
@@ -984,10 +1061,10 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         para.styleId === 'DN-Subheading' ||
         (!c.lead && c.content.length === 0)
       if (isLead && para.text) {
-        c.lead = para.text
+        c.lead = para.richText
         c.leadFontSize = para.fontSize
       } else if (para.text) {
-        c.content.push(para.text)
+        c.content.push(para.richText)
         if (!c.fontSize && para.fontSize) c.fontSize = para.fontSize
       }
       continue
@@ -1000,7 +1077,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (para.inTable && para.tableCell) {
         const col = para.tableCell.col
         const cell = c.cells.get(col) || { content: [] }
-        if (para.text) cell.content.push(para.text)
+        if (para.text) cell.content.push(para.richText)
         if (!cell.fontSize && para.fontSize) cell.fontSize = para.fontSize
         c.cells.set(col, cell)
       }
@@ -1017,7 +1094,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         const { row, col } = para.tableCell
         const key = `${row}:${col}`
         const values = c.cells.get(key) || []
-        if (para.text) values.push(para.text)
+        if (para.text) values.push(para.richText)
         c.cells.set(key, values)
         c.maxRow = Math.max(c.maxRow, row)
         c.maxCol = Math.max(c.maxCol, col)
@@ -1046,7 +1123,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (para.inTable && para.tableCell) {
         const row = para.tableCell.row
         const item = c.items.get(row) || { text: [] }
-        if (para.text) item.text.push(para.text)
+        if (para.text) item.text.push(para.richText)
         if (!item.fontSize && para.fontSize) item.fontSize = para.fontSize
         c.items.set(row, item)
       }
@@ -1066,7 +1143,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         const normalized = para.text.trim().toLowerCase()
         const isPlaceholder =
           normalized === 'legenda da imagem (opcional)' || normalized === 'image caption (optional)'
-        if (!isPlaceholder) c.caption.push(para.text)
+        if (!isPlaceholder) c.caption.push(para.richText)
       }
       continue
     }
@@ -1081,17 +1158,17 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (para.styleId === 'DN-Process-Passo') {
         if (c.currentItem) c.items.push(c.currentItem)
         c.currentItem = newProcessStep()
-        c.currentItem.step = para.text
+        c.currentItem.step = para.richText
       } else if (para.styleId === 'DN-Process-Titulo') {
         if (!c.currentItem) c.currentItem = newProcessStep()
         const normalized = para.text.trim().toLowerCase()
         const isPlaceholder =
           normalized === 'título do passo (opcional)' || normalized === 'step title (optional)'
-        if (!isPlaceholder) c.currentItem.title = para.text
+        if (!isPlaceholder) c.currentItem.title = para.richText
       } else if (para.styleId === 'DN-Process-Texto') {
         if (!c.currentItem) c.currentItem = newProcessStep()
         if (para.text) {
-          c.currentItem.text = [c.currentItem.text, para.text].filter(Boolean).join(' ')
+          c.currentItem.text = [c.currentItem.text, para.richText].filter(Boolean).join(' ')
         }
         if (para.fontSize) c.currentItem.fontSize = para.fontSize
       } else if (para.inTable && para.tableCell?.row === 2 && para.imageEmbeds[0]) {
@@ -1118,7 +1195,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (isTitle) {
         if (c.currentItem) c.items.push(c.currentItem)
         c.currentItem = {
-          title: para.text,
+          title: para.richText,
           content: [],
           img: '',
           altText: '',
@@ -1142,7 +1219,11 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (para.inTable && para.tableCell?.col === 0) {
         if (para.text && !isNoImageMarker(para.text)) {
           rememberContentFontSize(c, para)
-          c.currentItem.content.push(para.text)
+          c.currentItem.content.push(
+            expectedType === 'tabs' && para.isListItem
+              ? { type: 'bullet', text: para.richText }
+              : para.richText
+          )
         }
         continue
       }
@@ -1162,7 +1243,11 @@ function buildTree(paras: ParaInfo[]): CourseTree {
 
       if (para.text && !isNoImageMarker(para.text)) {
         rememberContentFontSize(c, para)
-        c.currentItem.content.push(para.text)
+        c.currentItem.content.push(
+          expectedType === 'tabs' && para.isListItem
+            ? { type: 'bullet', text: para.richText }
+            : para.richText
+        )
       }
 
       continue
@@ -1179,7 +1264,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (!c.buffer.embed && para.imageEmbeds.length > 0) c.buffer.embed = para.imageEmbeds[0]
       if (!para.imgPlaceholder && para.text && !isNoImageMarker(para.text)) {
         rememberContentFontSize(c, para)
-        c.buffer.text.push(para.text)
+        c.buffer.text.push(para.richText)
       }
       continue
     }
@@ -1203,15 +1288,15 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         if (t === 'info' || t === 'alert' || t === 'tip' || t === 'none') c.icon = t
         else c.icon = 'info'
       } else if (para.styleId === 'DN-Callout-Titulo') {
-        c.title = para.text
+        c.title = para.richText
       } else if (para.styleId === 'DN-Callout-Conteudo') {
         if (para.text) {
           rememberContentFontSize(c, para)
-          c.content.push(para.text)
+          c.content.push(para.richText)
         }
       } else if (para.text) {
         rememberContentFontSize(c, para)
-        c.content.push(para.text)
+        c.content.push(para.richText)
       }
       continue
     }
@@ -1229,13 +1314,13 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       } else if (para.styleId === 'DN-Video-Legenda') {
         if (para.text) {
           rememberContentFontSize(c, para)
-          c.subtitle.push(para.text)
+          c.subtitle.push(para.richText)
         }
       } else if (!c.link && para.text) {
         c.link = para.text
       } else if (para.text) {
         rememberContentFontSize(c, para)
-        c.subtitle.push(para.text)
+        c.subtitle.push(para.richText)
       }
       continue
     }
@@ -1252,7 +1337,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (!para.inTable && para.styleId === 'DN-Card-Titulo') {
         if (c.currentItem) c.items.push(c.currentItem)
         c.currentItem = newCardItem()
-        c.currentItem.title = para.text
+        c.currentItem.title = para.richText
         continue
       }
 
@@ -1262,8 +1347,8 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         if (para.text && !isNoImageMarker(para.text)) {
           rememberContentFontSize(c, para)
           c.currentItem.content = c.currentItem.content
-            ? c.currentItem.content + ' ' + para.text
-            : para.text
+            ? c.currentItem.content + ' ' + para.richText
+            : para.richText
         }
         continue
       }
@@ -1284,8 +1369,8 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       if (para.text && !isNoImageMarker(para.text)) {
         rememberContentFontSize(c, para)
         c.currentItem.content = c.currentItem.content
-          ? c.currentItem.content + ' ' + para.text
-          : para.text
+          ? c.currentItem.content + ' ' + para.richText
+          : para.richText
       }
 
       continue
@@ -1317,14 +1402,14 @@ function buildTree(paras: ParaInfo[]): CourseTree {
           c.currentItem = newFlipItem()
         }
 
-        c.currentItem.title = para.text
+        c.currentItem.title = para.richText
         c.side = 'front'
         continue
       }
 
       if (!para.inTable && para.styleId === 'DN-Flip-Verso-Titulo') {
         if (!c.currentItem) c.currentItem = newFlipItem()
-        c.currentItem.backTitle = para.text
+        c.currentItem.backTitle = para.richText
         c.side = 'back'
         continue
       }
@@ -1336,12 +1421,12 @@ function buildTree(paras: ParaInfo[]): CourseTree {
           rememberContentFontSize(c, para)
           if (c.side === 'back') {
             c.currentItem.backContent = c.currentItem.backContent
-              ? c.currentItem.backContent + ' ' + para.text
-              : para.text
+              ? c.currentItem.backContent + ' ' + para.richText
+              : para.richText
           } else {
             c.currentItem.content = c.currentItem.content
-              ? c.currentItem.content + ' ' + para.text
-              : para.text
+              ? c.currentItem.content + ' ' + para.richText
+              : para.richText
           }
         }
         continue
@@ -1365,16 +1450,16 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         if (para.text && !isNoImageMarker(para.text)) {
           rememberContentFontSize(c, para)
           c.currentItem.content = c.currentItem.content
-            ? c.currentItem.content + ' ' + para.text
-            : para.text
+            ? c.currentItem.content + ' ' + para.richText
+            : para.richText
         }
         c.side = 'front'
       } else if (para.styleId === 'DN-Flip-Verso-Conteudo') {
         if (para.text && !isNoImageMarker(para.text)) {
           rememberContentFontSize(c, para)
           c.currentItem.backContent = c.currentItem.backContent
-            ? c.currentItem.backContent + ' ' + para.text
-            : para.text
+            ? c.currentItem.backContent + ' ' + para.richText
+            : para.richText
         }
         c.side = 'back'
       }
@@ -1406,28 +1491,28 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         if (para.text) {
           rememberContentFontSize(c, para)
           if (!c.questionFontSize && para.fontSize) c.questionFontSize = para.fontSize
-          c.question = para.text
+          c.question = para.richText
         }
       } else if (para.styleId === 'DN-Quiz-Opcao') {
         if (para.text) {
           if (para.fontSize) c.optionFontSize = para.fontSize
-          c.options.push(para.text)
+          c.options.push(para.richText)
         }
       } else if (para.styleId === 'DN-Quiz-OpcaoCerta') {
         if (para.text) {
           if (para.fontSize) c.optionFontSize = para.fontSize
-          c.options.push(para.text)
-          c.correctAnswers.push(para.text)
+          c.options.push(para.richText)
+          c.correctAnswers.push(para.richText)
         }
       } else if (para.styleId === 'DN-Quiz-FeedbackOk') {
         if (para.text) {
           if (!c.feedbackFontSize && para.fontSize) c.feedbackFontSize = para.fontSize
-          c.feedbackCorrect.push(para.text)
+          c.feedbackCorrect.push(para.richText)
         }
       } else if (para.styleId === 'DN-Quiz-FeedbackErro') {
         if (para.text) {
           if (!c.feedbackFontSize && para.fontSize) c.feedbackFontSize = para.fontSize
-          c.feedbackIncorrect.push(para.text)
+          c.feedbackIncorrect.push(para.richText)
         }
       }
       continue
@@ -1456,13 +1541,13 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       lastBlock.blockType === 'paragraph' &&
       lastBlock.fontSize === paragraphFontSize
     ) {
-      ;(lastBlock as ParagraphBlock).content.push(para.text)
+      ;(lastBlock as ParagraphBlock).content.push(para.richText)
     } else {
       currentLesson.blocks.push({
         blockType: 'paragraph',
         ...DEFAULTS.paragraph,
         fontSize: paragraphFontSize,
-        content: [para.text]
+        content: [para.richText]
       })
     }
   }

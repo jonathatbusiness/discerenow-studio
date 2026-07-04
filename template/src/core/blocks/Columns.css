@@ -4,8 +4,10 @@
 
 .block-columns__grid {
   width: 60%;
+  max-width: var(--dn-reading-width);
   margin: 0 auto;
   padding: 30px 20px;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(var(--column-count), minmax(0, 1fr));
   gap: 32px;

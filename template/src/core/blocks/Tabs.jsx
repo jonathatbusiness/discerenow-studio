@@ -1,7 +1,41 @@
 import { useState, useEffect, useRef } from 'react'
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Tabs.css'
 import { FaSearch, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+
+const renderContent = (content = []) => {
+  const elements = []
+
+  for (let index = 0; index < content.length; index += 1) {
+    const entry = content[index]
+
+    if (typeof entry === 'object' && entry?.type === 'bullet') {
+      const items = []
+      let cursor = index
+      while (
+        cursor < content.length &&
+        typeof content[cursor] === 'object' &&
+        content[cursor]?.type === 'bullet'
+      ) {
+        items.push(content[cursor].text)
+        cursor += 1
+      }
+      elements.push(
+        <ul className="tab-content-list" key={`list-${index}`}>
+          {items.map((text, itemIndex) => (
+            <RichText as="li" html={text} key={itemIndex} />
+          ))}
+        </ul>
+      )
+      index = cursor - 1
+    } else {
+      elements.push(<RichText as="p" html={entry} key={`paragraph-${index}`} />)
+    }
+  }
+
+  return elements
+}
 
 const Tabs = ({ theme, textAlign, fontSize, items }) => {
   const { backgroundColor, boldColor, buttonColor } = blockThemes[theme] || blockThemes.default
@@ -21,11 +55,11 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
   }
 
   const scrollLeft = () => {
-    document.querySelector('.tabs-header').scrollBy({ left: -200, behavior: 'smooth' })
+    tabsHeaderRef.current?.scrollBy({ left: -200, behavior: 'smooth' })
   }
 
   const scrollRight = () => {
-    document.querySelector('.tabs-header').scrollBy({ left: 200, behavior: 'smooth' })
+    tabsHeaderRef.current?.scrollBy({ left: 200, behavior: 'smooth' })
   }
 
   const [showScrollButtons, setShowScrollButtons] = useState(false)
@@ -43,7 +77,7 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
     window.addEventListener('resize', checkScroll)
 
     return () => window.removeEventListener('resize', checkScroll)
-  }, [])
+  }, [items])
 
   return (
     <>
@@ -53,7 +87,7 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
       >
         <div className="tabs-block">
           {showScrollButtons && (
-            <button className="scroll-button left" onClick={scrollLeft}>
+            <button className="scroll-button left" onClick={scrollLeft} aria-label="Abas anteriores">
               <FaChevronLeft />
             </button>
           )}
@@ -64,21 +98,19 @@ const Tabs = ({ theme, textAlign, fontSize, items }) => {
                 className={`tab-button ${activeIndex === index ? 'active' : ''}`}
                 onClick={() => setActiveIndex(index)}
               >
-                {item.title}
+                <RichText html={item.title} />
               </button>
             ))}
           </div>
           {showScrollButtons && (
-            <button className="scroll-button right" onClick={scrollRight}>
+            <button className="scroll-button right" onClick={scrollRight} aria-label="Próximas abas">
               <FaChevronRight />
             </button>
           )}
         </div>
         <div className="tabs-block-content">
           <div className="tab-content" style={{ textAlign, fontSize }}>
-            {items[activeIndex].content.map((text, i) => (
-              <p key={i}>{text}</p>
-            ))}
+            {renderContent(items[activeIndex].content)}
 
             {items[activeIndex].img && (
               <div

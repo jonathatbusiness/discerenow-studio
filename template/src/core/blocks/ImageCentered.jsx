@@ -1,4 +1,5 @@
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './ImageCentered.css'
 
 const ImageCentered = ({ image, altText = '', caption, theme }) => {
@@ -13,7 +14,7 @@ const ImageCentered = ({ image, altText = '', caption, theme }) => {
     >
       <div className="block-image-centered__inner">
         <img src={image} alt={altText} />
-        {caption ? <figcaption>{caption}</figcaption> : null}
+        {caption ? <RichText as="figcaption" html={caption} /> : null}
       </div>
     </figure>
   )

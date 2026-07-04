@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import blockThemes from '../../theme/blockThemes'
+import RichText from '../../components/RichText'
 import './Quiz.css'
 import { FiCheck, FiX } from 'react-icons/fi'
 import { FaRedo } from 'react-icons/fa'
@@ -60,7 +61,11 @@ const Quiz = ({
   return (
     <div className="quiz-block-container" style={{ backgroundColor, '--btn-bg': buttonColor }}>
       <div className="quiz-block">
-        <h3 style={{ textAlign, fontSize: resolvedQuestionFontSize }}>{question}</h3>
+        <RichText
+          as="h3"
+          html={question}
+          style={{ textAlign, fontSize: resolvedQuestionFontSize }}
+        />
         <div className="default-divider"></div>
 
         <div className="quiz-options" style={{ textAlign }}>
@@ -78,7 +83,7 @@ const Quiz = ({
                 disabled={submitted}
                 onChange={() => handleChange(option)}
               />
-              {option}
+              <RichText html={option} />
               {submitted && (
                 <>
                   {correctAnswers.includes(option) ? (
@@ -113,9 +118,11 @@ const Quiz = ({
                   <FiX className="feedback-icon incorrect" />
                 )}
               </div>
-              <p style={{ fontSize: resolvedFeedbackFontSize }}>
-                {isCorrect ? feedbackCorrect : feedbackIncorrect}
-              </p>
+              <RichText
+                as="p"
+                html={isCorrect ? feedbackCorrect : feedbackIncorrect}
+                style={{ fontSize: resolvedFeedbackFontSize }}
+              />
 
               {!isCorrect && (
                 <button className="quiz-retry" onClick={resetQuiz}>
