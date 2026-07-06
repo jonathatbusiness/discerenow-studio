@@ -14,10 +14,21 @@ type GenerateResult =
 
 type BuildResult = { ok: true; finalZipPath: string } | { ok: false; error: string }
 
+type UpdateInfo = {
+  currentVersion: string
+  latestVersion: string
+  updateAvailable: boolean
+  releaseName: string
+  publishedAt: string
+}
+
 declare global {
   interface Window {
     api: {
       getAppLocale: () => Promise<string>
+      getAppVersion: () => Promise<string>
+      checkForUpdates: () => Promise<UpdateInfo | null>
+      openLatestRelease: () => Promise<void>
       pickDocx: () => Promise<string | null>
       pickImage: () => Promise<string | null>
       saveScormZip: (suggestedName: string) => Promise<string | null>

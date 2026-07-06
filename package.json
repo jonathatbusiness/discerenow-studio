@@ -1,6 +1,6 @@
 {
   "name": "discerenow-studio",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Convert structured Microsoft Word documents into SCORM-ready and web-ready digital learning courses.",
   "main": "./out/main/index.js",
   "author": "Jonatha Teixeira",

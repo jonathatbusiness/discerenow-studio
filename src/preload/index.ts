@@ -14,8 +14,19 @@ export type GenerateResult =
 
 export type BuildResult = { ok: true; finalZipPath: string } | { ok: false; error: string }
 
+export type UpdateInfo = {
+  currentVersion: string
+  latestVersion: string
+  updateAvailable: boolean
+  releaseName: string
+  publishedAt: string
+}
+
 const api = {
   getAppLocale: (): Promise<string> => ipcRenderer.invoke('app:getLocale'),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke('app:getVersion'),
+  checkForUpdates: (): Promise<UpdateInfo | null> => ipcRenderer.invoke('app:checkForUpdates'),
+  openLatestRelease: (): Promise<void> => ipcRenderer.invoke('app:openLatestRelease'),
   pickDocx: (): Promise<string | null> => ipcRenderer.invoke('dialog:pickDocx'),
   pickImage: (): Promise<string | null> => ipcRenderer.invoke('dialog:pickImage'),
   saveScormZip: (suggestedName: string): Promise<string | null> =>

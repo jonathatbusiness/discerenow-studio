@@ -12,6 +12,10 @@ export function getLanguageFromLocale(locale?: string): AppLanguage {
 export const translations: Record<AppLanguage, Record<string, string>> = {
   pt: {
     appSubtitle: 'Gere cursos SCORM a partir de documentos Word',
+    updateBadge: 'Nova versão',
+    updateAvailable: 'Atualização disponível',
+    closeUpdate: 'Fechar aviso de atualização',
+    downloadUpdate: 'Baixar atualização',
     courseInfo: 'Informações do curso',
     courseName: 'Nome do curso',
     shortDescription: 'Descrição curta',
@@ -119,6 +123,10 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
   },
   en: {
     appSubtitle: 'Generate SCORM courses from Word documents',
+    updateBadge: 'New version',
+    updateAvailable: 'Update available',
+    closeUpdate: 'Close update notice',
+    downloadUpdate: 'Download update',
     courseInfo: 'Course information',
     courseName: 'Course name',
     shortDescription: 'Short description',

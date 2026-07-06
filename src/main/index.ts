@@ -9,6 +9,71 @@ import {
   type CourseMetadataInput
 } from './parser/lessonWriter'
 import { buildAndExportScorm, buildAndExportWeb, checkNpmAvailable } from './runner/scormRunner'
+
+const RELEASES_API_URL =
+  'https://api.github.com/repos/jonathatbusiness/discerenow-studio-installer/releases/latest'
+const RELEASES_PAGE_URL =
+  'https://github.com/jonathatbusiness/discerenow-studio-installer/releases/latest'
+
+type UpdateInfo = {
+  currentVersion: string
+  latestVersion: string
+  updateAvailable: boolean
+  releaseName: string
+  publishedAt: string
+}
+
+function versionParts(version: string): number[] {
+  const match = version
+    .trim()
+    .replace(/^v/i, '')
+    .match(/^\d+(?:\.\d+)*/)
+  return match ? match[0].split('.').map(Number) : []
+}
+
+function isNewerVersion(candidate: string, current: string): boolean {
+  const candidateParts = versionParts(candidate)
+  const currentParts = versionParts(current)
+  if (candidateParts.length === 0 || currentParts.length === 0) return false
+  const length = Math.max(candidateParts.length, currentParts.length)
+  for (let index = 0; index < length; index += 1) {
+    const difference = (candidateParts[index] || 0) - (currentParts[index] || 0)
+    if (difference !== 0) return difference > 0
+  }
+  return false
+}
+
+async function checkForUpdates(): Promise<UpdateInfo | null> {
+  try {
+    const response = await fetch(RELEASES_API_URL, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'DiscereNow-Studio',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      signal: AbortSignal.timeout(6000)
+    })
+    if (!response.ok) return null
+    const release = (await response.json()) as {
+      tag_name?: string
+      name?: string
+      published_at?: string
+    }
+    if (!release.tag_name) return null
+    const currentVersion = app.getVersion()
+    const latestVersion = release.tag_name.replace(/^v/i, '')
+    return {
+      currentVersion,
+      latestVersion,
+      updateAvailable: isNewerVersion(latestVersion, currentVersion),
+      releaseName: release.name || release.tag_name,
+      publishedAt: release.published_at || ''
+    }
+  } catch {
+    return null
+  }
+}
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -47,6 +112,16 @@ app.whenReady().then(() => {
 
   ipcMain.handle('app:getLocale', async () => {
     return app.getLocale()
+  })
+
+  ipcMain.handle('app:getVersion', async () => {
+    return app.getVersion()
+  })
+
+  ipcMain.handle('app:checkForUpdates', async () => checkForUpdates())
+
+  ipcMain.handle('app:openLatestRelease', async () => {
+    await shell.openExternal(RELEASES_PAGE_URL)
   })
 
   // ────── Dialog IPC handlers ──────

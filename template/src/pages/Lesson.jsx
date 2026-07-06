@@ -562,8 +562,14 @@ const Lesson = () => {
                 <motion.div
                   key={`${lessonKey}-${index}`}
                   id={`block-${index}`}
-                  initial={shouldReduceMotion ? false : { opacity: 0, y: 24, scale: 0.99 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  className={`lesson-block lesson-block--${block.blockType}${
+                    (block.blockType === 'heading' || block.blockType === 'subheading') &&
+                    currentLesson.blocks[index + 1]?.blockType === 'paragraph'
+                      ? ' lesson-block--followed-by-paragraph'
+                      : ''
+                  }`}
+                  initial={shouldReduceMotion ? false : { opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
                   viewport={{
                     once: true,
                     amount:
@@ -580,7 +586,7 @@ const Lesson = () => {
                   transition={
                     shouldReduceMotion
                       ? { duration: 0 }
-                      : { duration: 0.75, ease: [0.22, 1, 0.36, 1] }
+                      : { duration: 1.1, ease: [0.22, 1, 0.36, 1] }
                   }
                   onViewportEnter={() => onViewportEnter(index)}
                 >

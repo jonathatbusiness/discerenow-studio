@@ -19,14 +19,23 @@
   display: none;
 }
 
-@media screen and (min-width: 1151px) {
-  .lesson-container:not(.sidebar-hidden) + .main-footer {
-    width: calc(100% - 300px);
-    margin-left: 300px;
-  }
+.main-footer p {
+  transition: opacity 0.15s ease;
+}
 
-  .lesson-container.sidebar-hidden + .main-footer {
-    width: 100%;
-    margin-left: 0;
+.lesson-container:not(.sidebar-hidden) + .main-footer {
+  width: calc(100% - 300px);
+  margin-left: 300px;
+}
+
+.lesson-container.sidebar-hidden + .main-footer {
+  width: 100%;
+  margin-left: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .lesson-container:not(.sidebar-hidden) + .main-footer p {
+    visibility: hidden;
+    opacity: 0;
   }
 }

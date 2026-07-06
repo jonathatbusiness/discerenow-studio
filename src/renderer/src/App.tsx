@@ -22,19 +22,136 @@ type TreeBlock = { blockType: string; theme?: string; [k: string]: unknown }
 type TreeLesson = { chapterId: string; lessonId: string; name: string; blocks: TreeBlock[] }
 type TreeChapter = { id: string; chapterName: string; lessons: TreeLesson[] }
 type Tree = { chapters: TreeChapter[] }
+type UpdateInfo = {
+  currentVersion: string
+  latestVersion: string
+  updateAvailable: boolean
+  releaseName: string
+  publishedAt: string
+}
 
 const THEME_OPTIONS = [
-  { value: 'default', labelKey: 'themeDefault' },
-  { value: 'corporativo1', labelKey: 'themeCorporate1' },
-  { value: 'corporativo2', labelKey: 'themeCorporate2' },
-  { value: 'corporativo3', labelKey: 'themeCorporate3' },
-  { value: 'audacioso1', labelKey: 'themeBold1' },
-  { value: 'audacioso2', labelKey: 'themeBold2' },
-  { value: 'audacioso3', labelKey: 'themeBold3' },
-  { value: 'noturno1', labelKey: 'themeDark1' },
-  { value: 'noturno2', labelKey: 'themeDark2' },
-  { value: 'noturno3', labelKey: 'themeDark3' }
+  {
+    value: 'default',
+    labelKey: 'themeDefault',
+    colors: ['#e0e7eb', '#555555', '#2c3e50', '#007bff']
+  },
+  {
+    value: 'corporativo1',
+    labelKey: 'themeCorporate1',
+    colors: ['#e0e7eb', '#555555', '#2c3e50', '#007bff']
+  },
+  {
+    value: 'corporativo2',
+    labelKey: 'themeCorporate2',
+    colors: ['#e8f5e9', '#555555', '#2c3e50', '#2ecc71']
+  },
+  {
+    value: 'corporativo3',
+    labelKey: 'themeCorporate3',
+    colors: ['#f2f4f7', '#555555', '#2c3e50', '#9b59b6']
+  },
+  {
+    value: 'audacioso1',
+    labelKey: 'themeBold1',
+    colors: ['#fdfbe7', '#555555', '#333333', '#ff9e00']
+  },
+  {
+    value: 'audacioso2',
+    labelKey: 'themeBold2',
+    colors: ['#fdfbe7', '#555555', '#333333', '#00b894']
+  },
+  {
+    value: 'audacioso3',
+    labelKey: 'themeBold3',
+    colors: ['#fdfbe7', '#555555', '#333333', '#6c5ce7']
+  },
+  { value: 'noturno1', labelKey: 'themeDark1', colors: ['#2c3e50', '#b0b0b0', '#e94560'] },
+  { value: 'noturno2', labelKey: 'themeDark2', colors: ['#363636', '#b0b0b0', '#00bcd4'] },
+  { value: 'noturno3', labelKey: 'themeDark3', colors: ['#282828', '#b0b0b0', '#ffeb3b'] }
 ]
+
+type ThemeSelectProps = {
+  value: string
+  placeholder?: string
+  labels: Record<string, string>
+  onChange: (value: string) => void
+}
+
+function ThemeSwatches({ colors }: { colors: string[] }): React.JSX.Element {
+  return (
+    <span className="theme-swatches" aria-hidden="true">
+      {colors.map((color, index) => (
+        <span key={`${color}-${index}`} style={{ backgroundColor: color }} />
+      ))}
+    </span>
+  )
+}
+
+function ThemeSelect({
+  value,
+  placeholder,
+  labels,
+  onChange
+}: ThemeSelectProps): React.JSX.Element {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const selected = THEME_OPTIONS.find((theme) => theme.value === value)
+
+  useEffect(() => {
+    if (!open) return
+    const close = (event: MouseEvent): void => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const closeOnEscape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [open])
+
+  return (
+    <div className={`theme-select${open ? ' is-open' : ''}`} ref={rootRef}>
+      <button
+        type="button"
+        className="theme-select-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        {selected ? <ThemeSwatches colors={selected.colors} /> : null}
+        <span>{selected ? labels[selected.labelKey] : placeholder}</span>
+        <span className="theme-select-chevron" aria-hidden="true">
+          ⌄
+        </span>
+      </button>
+      {open && (
+        <div className="theme-select-menu" role="listbox">
+          {THEME_OPTIONS.map((theme) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={theme.value === value}
+              className={theme.value === value ? 'is-selected' : ''}
+              key={theme.value}
+              onClick={() => {
+                onChange(theme.value)
+                setOpen(false)
+              }}
+            >
+              <ThemeSwatches colors={theme.colors} />
+              <span>{labels[theme.labelKey]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function slugify(str: string): string {
   return str
@@ -44,6 +161,15 @@ function slugify(str: string): string {
     .trim()
     .replace(/\s+/g, '-')
     .toLowerCase()
+}
+
+function cleanProgressMessage(line: string): string {
+  const clean = line.replace(/\u001b\[[0-9;]*m/g, '')
+  const lines = clean
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+  return lines[lines.length - 1] || clean.trim()
 }
 
 function blockIcon(type: string): string {
@@ -151,6 +277,10 @@ type Step = 1 | 2 | 3
 
 function App(): React.JSX.Element {
   const [language, setLanguage] = useState(() => getLanguageFromLocale(navigator.language))
+  const [appVersion, setAppVersion] = useState('')
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
+  const [updatePanelOpen, setUpdatePanelOpen] = useState(false)
+  const [updateBadgeVisible, setUpdateBadgeVisible] = useState(false)
 
   const t = translations[language]
 
@@ -158,7 +288,22 @@ function App(): React.JSX.Element {
     void window.api.getAppLocale().then((locale) => {
       setLanguage(getLanguageFromLocale(locale))
     })
+    void window.api.getAppVersion().then(setAppVersion)
+    void window.api.checkForUpdates().then((info) => {
+      if (!info?.updateAvailable) return
+      setUpdateInfo(info)
+      setUpdateBadgeVisible(
+        localStorage.getItem(`dn-studio-update-seen-${info.latestVersion}`) !== '1'
+      )
+    })
   }, [])
+
+  const openUpdatePanel = (): void => {
+    if (!updateInfo) return
+    setUpdatePanelOpen(true)
+    setUpdateBadgeVisible(false)
+    localStorage.setItem(`dn-studio-update-seen-${updateInfo.latestVersion}`, '1')
+  }
   const [step, setStep] = useState<Step>(1)
 
   const [m, setM] = useState<CourseMetadata>({
@@ -178,13 +323,15 @@ function App(): React.JSX.Element {
   const [tree, setTree] = useState<Tree | null>(null)
   // themesByBlock[`${capId}_${lessonId}`][blockIndex] = themeKey
   const [themesByBlock, setThemesByBlock] = useState<Record<string, Record<number, string>>>({})
+  const [allBlocksTheme, setAllBlocksTheme] = useState('')
   const [parseError, setParseError] = useState<string>('')
 
   const [phase, setPhase] = useState<Phase>('idle')
   const [logs, setLogs] = useState<string[]>([])
   const [errorMsg, setErrorMsg] = useState<string>('')
   const [finalZipPath, setFinalZipPath] = useState<string>('')
-  const logBoxRef = useRef<HTMLPreElement | null>(null)
+  const [exportProgress, setExportProgress] = useState(0)
+  const [exportStatus, setExportStatus] = useState('')
 
   useEffect(() => {
     void window.api.checkNpm().then((r) => {
@@ -194,13 +341,15 @@ function App(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    const off = window.api.onBuildLog((line) => setLogs((prev) => [...prev, line]))
+    const off = window.api.onBuildLog((line) => {
+      setLogs((prev) => [...prev, line])
+      setExportStatus(cleanProgressMessage(line))
+      setExportProgress((current) =>
+        Math.min(92, current + Math.max(2, Math.ceil((92 - current) / 8)))
+      )
+    })
     return off
   }, [])
-
-  useEffect(() => {
-    if (logBoxRef.current) logBoxRef.current.scrollTop = logBoxRef.current.scrollHeight
-  }, [logs])
 
   const update = <K extends keyof CourseMetadata>(k: K, v: CourseMetadata[K]): void =>
     setM((prev) => ({ ...prev, [k]: v }))
@@ -213,6 +362,7 @@ function App(): React.JSX.Element {
       setDocxPath(p)
       setTree(null)
       setThemesByBlock({})
+      setAllBlocksTheme('')
     }
   }
 
@@ -240,6 +390,7 @@ function App(): React.JSX.Element {
   }
 
   const setBlockTheme = (lessonKey: string, blockIdx: number, themeKey: string): void => {
+    setAllBlocksTheme('')
     setThemesByBlock((prev) => {
       const next = { ...prev }
       const lessonMap = { ...(next[lessonKey] || {}) }
@@ -251,6 +402,7 @@ function App(): React.JSX.Element {
   }
 
   const applyThemeToLesson = (lesson: TreeLesson, themeKey: string): void => {
+    setAllBlocksTheme('')
     setThemesByBlock((prev) => {
       const next = { ...prev }
       const key = `${lesson.chapterId}_${lesson.lessonId}`
@@ -267,6 +419,7 @@ function App(): React.JSX.Element {
 
   const applyThemeToAll = (themeKey: string): void => {
     if (!tree) return
+    setAllBlocksTheme(themeKey)
     setThemesByBlock(() => {
       if (themeKey === 'default') return {}
       const next: Record<string, Record<number, string>> = {}
@@ -293,6 +446,8 @@ function App(): React.JSX.Element {
     setLogs([])
     setErrorMsg('')
     setFinalZipPath('')
+    setExportProgress(8)
+    setExportStatus(t.generatingLessonFiles)
     setPhase('generating')
 
     const metadata = {
@@ -330,6 +485,8 @@ function App(): React.JSX.Element {
       `✓ ${genResult.lessonPaths.length} lição(ões) escrita(s)`,
       `✓ ${genResult.imagesCopied} imagem(ns) extraída(s)`
     ])
+    setExportProgress(40)
+    setExportStatus(t.packagingCourse)
 
     setPhase('building')
     const buildPayload = { destZipPath, metadata }
@@ -345,6 +502,7 @@ function App(): React.JSX.Element {
       return
     }
     setFinalZipPath(buildResult.finalZipPath)
+    setExportProgress(100)
     setPhase('done')
   }
 
@@ -358,6 +516,9 @@ function App(): React.JSX.Element {
     setLogs([])
     setErrorMsg('')
     setFinalZipPath('')
+    setExportProgress(0)
+    setExportStatus('')
+    setAllBlocksTheme('')
   }
 
   return (
@@ -366,10 +527,58 @@ function App(): React.JSX.Element {
         <div className="app-brand">
           <img src={appIcon} alt="DiscereNow Studio" className="app-logo" />
           <div>
-            <h1>DiscereNow Studio</h1>
+            <div className="app-title-row">
+              <h1>DiscereNow Studio</h1>
+              {appVersion &&
+                (updateInfo ? (
+                  <button type="button" className="app-version" onClick={openUpdatePanel}>
+                    v{appVersion}
+                  </button>
+                ) : (
+                  <span className="app-version">v{appVersion}</span>
+                ))}
+              {updateBadgeVisible && (
+                <button type="button" className="app-update-badge" onClick={openUpdatePanel}>
+                  {t.updateBadge}
+                </button>
+              )}
+            </div>
             <p className="subtitle">{t.appSubtitle}</p>
           </div>
         </div>
+        {updatePanelOpen && updateInfo && (
+          <aside className="app-update-panel">
+            <div className="app-update-panel-heading">
+              <strong>{t.updateAvailable}</strong>
+              <button
+                type="button"
+                className="app-update-close"
+                aria-label={t.closeUpdate}
+                onClick={() => setUpdatePanelOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <p className="app-update-version">
+              v{appVersion} → v{updateInfo.latestVersion}
+            </p>
+            <p>{updateInfo.releaseName}</p>
+            {updateInfo.publishedAt && (
+              <time dateTime={updateInfo.publishedAt}>
+                {new Intl.DateTimeFormat(language === 'pt' ? 'pt-BR' : 'en', {
+                  dateStyle: 'medium'
+                }).format(new Date(updateInfo.publishedAt))}
+              </time>
+            )}
+            <button
+              type="button"
+              className="generate-btn app-update-download"
+              onClick={() => void window.api.openLatestRelease()}
+            >
+              {t.downloadUpdate}
+            </button>
+          </aside>
+        )}
       </header>
 
       <div
@@ -546,40 +755,23 @@ function App(): React.JSX.Element {
             <section className="form-section">
               <div className="course-theme-row">
                 <span>{t.courseVisualTheme}</span>
-                <select
+                <ThemeSelect
                   value={m.courseTheme}
-                  onChange={(e) => update('courseTheme', e.target.value)}
-                >
-                  {THEME_OPTIONS.map((theme) => (
-                    <option key={theme.value} value={theme.value}>
-                      {t[theme.labelKey]}
-                    </option>
-                  ))}
-                </select>
+                  labels={t}
+                  onChange={(value) => update('courseTheme', value)}
+                />
               </div>
 
               <div className="review-header">
                 <h2>{t.reviewBlocks}</h2>
                 <div className="review-mass-apply">
                   <span>{t.applyThemeToAll}</span>
-                  <select
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        applyThemeToAll(e.target.value)
-                        e.target.value = ''
-                      }
-                    }}
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      {t.chooseTheme}
-                    </option>
-                    {THEME_OPTIONS.map((theme) => (
-                      <option key={theme.value} value={theme.value}>
-                        {t[theme.labelKey]}
-                      </option>
-                    ))}
-                  </select>
+                  <ThemeSelect
+                    value={allBlocksTheme}
+                    placeholder={t.chooseTheme}
+                    labels={t}
+                    onChange={applyThemeToAll}
+                  />
                 </div>
               </div>
 
@@ -609,24 +801,12 @@ function App(): React.JSX.Element {
                           <div className="review-lesson-header">
                             <span className="review-lesson-help">{t.lessonThemeHelp}</span>
 
-                            <select
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  applyThemeToLesson(lesson, e.target.value)
-                                  e.target.value = ''
-                                }
-                              }}
-                              defaultValue=""
-                            >
-                              <option value="" disabled>
-                                {t.applyTheme}
-                              </option>
-                              {THEME_OPTIONS.map((theme) => (
-                                <option key={theme.value} value={theme.value}>
-                                  {t[theme.labelKey]}
-                                </option>
-                              ))}
-                            </select>
+                            <ThemeSelect
+                              value=""
+                              placeholder={t.applyTheme}
+                              labels={t}
+                              onChange={(value) => applyThemeToLesson(lesson, value)}
+                            />
                           </div>
 
                           <div className="review-blocks">
@@ -639,16 +819,11 @@ function App(): React.JSX.Element {
                                     {blockIcon(block.blockType)}
                                   </div>
                                   <span className="review-block-label">{blockLabel(block, t)}</span>
-                                  <select
+                                  <ThemeSelect
                                     value={currentTheme}
-                                    onChange={(e) => setBlockTheme(lessonKey, i, e.target.value)}
-                                  >
-                                    {THEME_OPTIONS.map((theme) => (
-                                      <option key={theme.value} value={theme.value}>
-                                        {t[theme.labelKey]}
-                                      </option>
-                                    ))}
-                                  </select>
+                                    labels={t}
+                                    onChange={(value) => setBlockTheme(lessonKey, i, value)}
+                                  />
                                 </div>
                               )
                             })}
@@ -703,14 +878,24 @@ function App(): React.JSX.Element {
             )}
 
             {(phase === 'generating' || phase === 'building') && (
-              <>
-                <p className="section-help">
-                  {phase === 'generating' ? t.generatingLessonFiles : t.packagingCourse}
-                </p>
-                <pre ref={logBoxRef} className="status-box">
-                  {logs.join('\n')}
-                </pre>
-              </>
+              <div className="export-progress-card">
+                <div className="export-progress-heading">
+                  <strong>
+                    {phase === 'generating' ? t.generatingLessonFiles : t.packagingCourse}
+                  </strong>
+                  <span>{exportProgress}%</span>
+                </div>
+                <div
+                  className="export-progress-track"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={exportProgress}
+                >
+                  <div className="export-progress-fill" style={{ width: `${exportProgress}%` }} />
+                </div>
+                <p className="export-progress-status">{exportStatus}</p>
+              </div>
             )}
 
             {phase === 'done' && (

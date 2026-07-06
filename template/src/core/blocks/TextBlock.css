@@ -22,6 +22,6 @@
 
 @media screen and (max-width: 768px) {
   .block-text__inner {
-    width: 90%;
+    width: 100%;
   }
 }

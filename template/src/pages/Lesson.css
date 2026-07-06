@@ -1,5 +1,5 @@
 .lesson-body {
-  min-height: calc(100dvh - 70px);
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -7,8 +7,7 @@
 
 .lesson-container {
   width: calc(100vw - 315px);
-  min-height: 0;
-  flex: 1 0 auto;
+  height: 100%;
   margin: 0 auto;
 
   display: flex;
@@ -16,10 +15,6 @@
   align-items: flex-start;
   box-sizing: border-box;
   transition: padding-left 0.4s ease;
-}
-
-.lesson-body > .main-footer {
-  flex: 0 0 60px;
 }
 
 .lesson-container.sidebar-hidden {
@@ -58,7 +53,7 @@
 
 .lesson-navigation {
   width: 300px;
-  height: calc(100dvh - 70px);
+  height: 100dvh;
   position: sticky;
   top: 0;
   overflow: hidden;
@@ -177,9 +172,16 @@
   flex-grow: 1;
 }
 
+.lesson-block--followed-by-paragraph .block-text__inner {
+  padding-bottom: 0;
+}
+
+.lesson-block--followed-by-paragraph + .lesson-block--paragraph .block-paragraph {
+  padding-top: 16px;
+}
+
 .lesson-body.scrolled .lesson-navigation {
   margin-top: -70px;
-  height: 100dvh;
 }
 
 .lesson-body.scrolled .toggle-sidebar-btn {
@@ -255,14 +257,8 @@
   }
 
   .lesson-navigation {
-    height: calc(100dvh - 130px);
-    min-height: 0;
     transform: translateX(-300px);
     transition: transform 0.05s ease;
-  }
-
-  .lesson-body.scrolled .lesson-navigation {
-    height: calc(100dvh - 60px);
   }
 
   .lesson-container:not(.sidebar-hidden) + .lesson-navigation {

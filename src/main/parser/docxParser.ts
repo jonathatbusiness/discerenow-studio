@@ -403,13 +403,28 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function wordPropertyEnabled(node: XmlNode | null): boolean {
-  if (!node) return false
+function wordPropertyValue(node: XmlNode | null): boolean | undefined {
+  if (!node) return undefined
   const value = node.attrs['w:val'] || node.attrs.val
   return value !== '0' && value !== 'false' && value !== 'off' && value !== 'none'
 }
 
-function paragraphRichText(p: XmlNode): string {
+type TextFormatting = {
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+}
+
+function formattingFromRPr(rPr: XmlNode | null): TextFormatting {
+  if (!rPr) return {}
+  return {
+    bold: wordPropertyValue(findFirst(rPr, 'b')),
+    italic: wordPropertyValue(findFirst(rPr, 'i')),
+    underline: wordPropertyValue(findFirst(rPr, 'u'))
+  }
+}
+
+function paragraphRichText(p: XmlNode, styleFormatting: TextFormatting = {}): string {
   const parts: string[] = []
 
   const runContent = (run: XmlNode): string => {
@@ -434,17 +449,24 @@ function paragraphRichText(p: XmlNode): string {
       if (child.name === '#text') continue
       if (localName(child.name) === 'r') {
         const rPr = findFirst(child, 'rPr')
-        let content = runContent(child)
-        if (!content) continue
-        if (wordPropertyEnabled(rPr ? findFirst(rPr, 'b') : null)) {
-          content = `<strong>${content}</strong>`
+        const directFormatting = formattingFromRPr(rPr)
+        const formatting = {
+          bold: directFormatting.bold ?? styleFormatting.bold,
+          italic: directFormatting.italic ?? styleFormatting.italic,
+          underline: directFormatting.underline ?? styleFormatting.underline
         }
-        if (wordPropertyEnabled(rPr ? findFirst(rPr, 'i') : null)) {
-          content = `<em>${content}</em>`
-        }
-        if (wordPropertyEnabled(rPr ? findFirst(rPr, 'u') : null)) {
-          content = `<u>${content}</u>`
-        }
+        const rawContent = runContent(child)
+        if (!rawContent) continue
+        const content = rawContent
+          .split('<br>')
+          .map((segment) => {
+            if (!segment) return segment
+            if (formatting.bold) segment = `<strong>${segment}</strong>`
+            if (formatting.italic) segment = `<em>${segment}</em>`
+            if (formatting.underline) segment = `<u>${segment}</u>`
+            return segment
+          })
+          .join('<br>')
         parts.push(content)
       } else {
         walk(child)
@@ -471,6 +493,7 @@ function paragraphIsListItem(p: XmlNode): boolean {
 
 type FontSizeContext = {
   byStyle: Record<string, string>
+  formattingByStyle: Record<string, TextFormatting>
   defaultFontSize?: string
 }
 
@@ -587,8 +610,10 @@ function collectParagraphs(body: XmlNode, fontSizes: FontSizeContext): ParaInfo[
 
       if (ln === 'p') {
         const text = paragraphText(child)
-        const richText = paragraphRichText(child) || escapeHtml(text)
         const style = paragraphStyle(child)
+        const richText =
+          paragraphRichText(child, style ? fontSizes.formattingByStyle[style] : undefined) ||
+          escapeHtml(text)
         const fontSize = paragraphFontSize(child, style, fontSizes)
         const imageEmbeds = findDrawingEmbeds(child)
         const para: ParaInfo = {
@@ -1309,10 +1334,33 @@ function buildTree(paras: ParaInfo[]): CourseTree {
       }
       const c = openCompound as Extract<CompoundState, { type: 'video' }>
 
-      if (para.styleId === 'DN-Video-Url') {
+      const videoCell = para.inTable ? para.tableCell : undefined
+
+      if (videoCell?.col === 0) {
+        // The left column contains localized guidance, never course content.
+      } else if (videoCell?.row === 0 && videoCell.col === 1) {
         c.link = para.text
+      } else if (videoCell?.row === 1 && videoCell.col === 1) {
+        const normalized = para.text.trim().toLowerCase()
+        const isPlaceholder =
+          normalized === 'digite a legenda do vídeo...' ||
+          normalized === 'enter the video caption...'
+        if (para.text && !isPlaceholder) {
+          rememberContentFontSize(c, para)
+          c.subtitle.push(para.richText)
+        }
+      } else if (para.styleId === 'DN-Video-Url') {
+        c.link = para.text
+      } else if (para.styleId === 'DN-Video-Rotulo') {
+        // Labels in the guided add-in table are instructional only.
       } else if (para.styleId === 'DN-Video-Legenda') {
-        if (para.text) {
+        const normalized = para.text.trim().toLowerCase()
+        const isPlaceholder =
+          normalized === 'legenda do vídeo (opcional)' ||
+          normalized === 'video caption (optional)' ||
+          normalized === 'digite a legenda do vídeo...' ||
+          normalized === 'enter the video caption...'
+        if (para.text && !isPlaceholder) {
           rememberContentFontSize(c, para)
           c.subtitle.push(para.richText)
         }
@@ -1391,7 +1439,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
 
       const c = openCompound as Extract<CompoundState, { type: 'flipcard' }>
 
-      if (!para.inTable && para.styleId === 'DN-Flip-Frente-Titulo') {
+      if (para.text && !para.inTable && para.styleId === 'DN-Flip-Frente-Titulo') {
         if (
           c.currentItem &&
           (c.currentItem.backTitle || c.currentItem.backContent || c.currentItem._backEmbedRId)
@@ -1407,7 +1455,7 @@ function buildTree(paras: ParaInfo[]): CourseTree {
         continue
       }
 
-      if (!para.inTable && para.styleId === 'DN-Flip-Verso-Titulo') {
+      if (para.text && !para.inTable && para.styleId === 'DN-Flip-Verso-Titulo') {
         if (!c.currentItem) c.currentItem = newFlipItem()
         c.currentItem.backTitle = para.richText
         c.side = 'back'
@@ -1574,15 +1622,16 @@ function buildTree(paras: ParaInfo[]): CourseTree {
 
 async function buildFontSizeContext(zip: JSZip): Promise<FontSizeContext> {
   const stylesFile = zip.file('word/styles.xml')
-  if (!stylesFile) return { byStyle: {} }
+  if (!stylesFile) return { byStyle: {}, formattingByStyle: {} }
 
   const xml = await stylesFile.async('string')
   const root = parseXml(xml)
 
   const styles = findFirst(root, 'styles')
-  if (!styles) return { byStyle: {} }
+  if (!styles) return { byStyle: {}, formattingByStyle: {} }
 
   const byStyle: Record<string, string> = {}
+  const formattingByStyle: Record<string, TextFormatting> = {}
   const docDefaults = findFirst(styles, 'docDefaults')
   const rPrDefault = docDefaults ? findFirst(docDefaults, 'rPrDefault') : null
   const defaultRPr = rPrDefault ? findFirst(rPrDefault, 'rPr') : null
@@ -1594,11 +1643,15 @@ async function buildFontSizeContext(zip: JSZip): Promise<FontSizeContext> {
 
     const rPr = findFirst(style, 'rPr')
     const fontSize = fontSizeFromRPr(rPr)
+    const formatting = formattingFromRPr(rPr)
 
     if (fontSize) byStyle[styleId] = fontSize
+    if (Object.values(formatting).some((value) => value !== undefined)) {
+      formattingByStyle[styleId] = formatting
+    }
   }
 
-  return { byStyle, defaultFontSize }
+  return { byStyle, formattingByStyle, defaultFontSize }
 }
 
 async function buildRelsMap(zip: JSZip): Promise<Record<string, string>> {
